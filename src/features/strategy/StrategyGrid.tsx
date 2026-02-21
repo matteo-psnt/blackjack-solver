@@ -1,5 +1,4 @@
 import type { StrategyTable } from '../../core/blackjack/types'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs'
 import { StrategyTable as StrategyTableComponent } from './StrategyTable'
 import { ActionLegend } from './ActionLegend'
 
@@ -43,29 +42,23 @@ export function StrategyGrid({ table }: StrategyGridProps) {
   }))
 
   return (
-    <div className="flex flex-col gap-4 px-6 py-5">
-      <Tabs defaultValue="hard">
-        <div className="flex items-center justify-between flex-wrap gap-3 mb-4">
-          <TabsList className="bg-muted">
-            <TabsTrigger value="hard">Hard</TabsTrigger>
-            <TabsTrigger value="soft">Soft</TabsTrigger>
-            <TabsTrigger value="pairs">Pairs</TabsTrigger>
-          </TabsList>
-          <ActionLegend />
-        </div>
+    <div className="px-6 py-5 flex flex-col gap-8">
+      <ActionLegend />
 
-        <TabsContent value="hard" className="mt-0">
-          <StrategyTableComponent rows={hardRows} />
-        </TabsContent>
+      <section>
+        <h2 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-3">Hard</h2>
+        <StrategyTableComponent rows={hardRows} />
+      </section>
 
-        <TabsContent value="soft" className="mt-0">
-          <StrategyTableComponent rows={softRows} />
-        </TabsContent>
+      <section>
+        <h2 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-3">Soft</h2>
+        <StrategyTableComponent rows={softRows} />
+      </section>
 
-        <TabsContent value="pairs" className="mt-0">
-          <StrategyTableComponent rows={pairRows} />
-        </TabsContent>
-      </Tabs>
+      <section>
+        <h2 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-3">Pairs</h2>
+        <StrategyTableComponent rows={pairRows} />
+      </section>
     </div>
   )
 }
