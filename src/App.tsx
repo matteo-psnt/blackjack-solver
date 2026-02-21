@@ -1,19 +1,24 @@
-import { Button } from "@/components/ui/button"
+import { useRulesStore } from './store/rulesStore'
+import { useStrategyTable } from './hooks/useStrategyTable'
+import { useHouseEdge } from './hooks/useHouseEdge'
+import { RulesPanel } from './features/rules/RulesPanel'
+import { HouseEdgeBanner } from './features/strategy/HouseEdgeBanner'
+import { StrategyGrid } from './features/strategy/StrategyGrid'
 
-export function App() {
+function App() {
+  const rules = useRulesStore((s) => s.rules)
+  const strategyTable = useStrategyTable(rules)
+  const houseEdge = useHouseEdge(rules)
+
   return (
-    <div className="flex min-h-svh p-6">
-      <div className="flex max-w-md min-w-0 flex-col gap-4 text-sm leading-loose">
-        <div>
-          <h1 className="font-medium">Project ready!</h1>
-          <p>You may now add components and start building.</p>
-          <p>We&apos;ve already added the button component for you.</p>
-          <Button className="mt-2">Button</Button>
+    <div className="flex h-svh overflow-hidden">
+      <RulesPanel />
+      <main className="flex-1 flex flex-col overflow-hidden">
+        <HouseEdgeBanner result={houseEdge} rules={rules} />
+        <div className="flex-1 overflow-y-auto">
+          <StrategyGrid table={strategyTable} />
         </div>
-        <div className="font-mono text-xs text-muted-foreground">
-          (Press <kbd>d</kbd> to toggle dark mode)
-        </div>
-      </div>
+      </main>
     </div>
   )
 }
