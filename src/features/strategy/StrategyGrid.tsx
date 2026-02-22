@@ -14,12 +14,23 @@ const SOFT_LABELS: Record<string, string> = {
 }
 
 const PAIR_LABELS: Record<string, string> = {
-  pair2: '2-2', pair3: '3-3', pair4: '4-4', pair5: '5-5', pair6: '6-6',
-  pair7: '7-7', pair8: '8-8', pair9: '9-9', pairT: 'T-T', pairA: 'A-A',
+  pair2: '2–2', pair3: '3–3', pair4: '4–4', pair5: '5–5', pair6: '6–6',
+  pair7: '7–7', pair8: '8–8', pair9: '9–9', pairT: 'T–T', pairA: 'A–A',
 }
 
 interface StrategyGridProps {
   table: StrategyTable
+}
+
+function SectionLabel({ children }: { children: string }) {
+  return (
+    <div className="flex items-center gap-3 mb-4">
+      <span className="text-[10px] font-medium uppercase tracking-[0.18em] text-muted-foreground/60">
+        {children}
+      </span>
+      <div className="flex-1 h-px bg-border/40" />
+    </div>
+  )
 }
 
 export function StrategyGrid({ table }: StrategyGridProps) {
@@ -42,23 +53,28 @@ export function StrategyGrid({ table }: StrategyGridProps) {
   }))
 
   return (
-    <div className="px-6 py-5 flex flex-col gap-8">
+    <div className="px-8 py-6 flex flex-col gap-10">
+      {/* Legend */}
       <ActionLegend />
 
+      {/* Hard hands — full width */}
       <section>
-        <h2 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-3">Hard</h2>
+        <SectionLabel>Hard</SectionLabel>
         <StrategyTableComponent rows={hardRows} />
       </section>
 
-      <section>
-        <h2 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-3">Soft</h2>
-        <StrategyTableComponent rows={softRows} />
-      </section>
+      {/* Soft + Pairs — side by side */}
+      <div className="flex flex-wrap gap-x-14 gap-y-10">
+        <section>
+          <SectionLabel>Soft</SectionLabel>
+          <StrategyTableComponent rows={softRows} />
+        </section>
 
-      <section>
-        <h2 className="text-[10px] uppercase tracking-widest text-muted-foreground mb-3">Pairs</h2>
-        <StrategyTableComponent rows={pairRows} />
-      </section>
+        <section>
+          <SectionLabel>Pairs</SectionLabel>
+          <StrategyTableComponent rows={pairRows} />
+        </section>
+      </div>
     </div>
   )
 }

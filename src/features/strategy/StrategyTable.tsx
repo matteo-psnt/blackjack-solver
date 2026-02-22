@@ -10,16 +10,27 @@ interface StrategyTableProps {
 export function StrategyTable({ rows }: StrategyTableProps) {
   return (
     <div className="overflow-x-auto">
-      <table className="border-collapse text-xs w-full">
+      <table className="border-collapse w-auto">
         <thead>
+          {/* Dealer upcard spanning label */}
           <tr>
-            <th className="w-12 text-right pr-2 py-1 text-muted-foreground font-medium text-[10px] uppercase tracking-widest">
+            <th className="w-12" />
+            <th
+              colSpan={10}
+              className="text-center text-[9px] font-medium uppercase tracking-[0.18em] text-muted-foreground/60 pb-1.5 pt-0"
+            >
+              Dealer Upcard
+            </th>
+          </tr>
+          {/* Individual upcard headers */}
+          <tr>
+            <th className="w-12 text-right pr-3 pb-1 text-[9px] font-medium uppercase tracking-widest text-muted-foreground/50">
               Hand
             </th>
             {DEALER_UPCARDS.map((up) => (
               <th
                 key={up}
-                className="w-8 text-center py-1 text-muted-foreground font-medium text-[10px] uppercase tracking-widest"
+                className="w-9 text-center pb-1 text-[11px] font-mono font-semibold text-muted-foreground"
               >
                 {up}
               </th>
@@ -29,11 +40,11 @@ export function StrategyTable({ rows }: StrategyTableProps) {
         <tbody>
           {rows.map(({ key, label, row }) => (
             <tr key={key}>
-              <td className="text-right pr-2 py-0 text-muted-foreground font-mono text-[11px] whitespace-nowrap">
+              <td className="text-right pr-3 py-0 text-muted-foreground/70 font-mono text-[11px] font-medium whitespace-nowrap">
                 {label}
               </td>
               {DEALER_UPCARDS.map((up) => (
-                <StrategyCell key={up} action={row[up].action} compact />
+                <StrategyCell key={up} action={row[up].action} />
               ))}
             </tr>
           ))}

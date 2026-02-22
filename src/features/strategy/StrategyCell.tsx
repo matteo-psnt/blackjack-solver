@@ -2,23 +2,20 @@ import type { DisplayAction } from '../../core/blackjack/types'
 
 interface StrategyCellProps {
   action: DisplayAction
-  compact?: boolean
 }
 
 const ACTION_STYLES: Record<DisplayAction, string> = {
-  H: 'bg-[var(--action-h)] text-white',
-  S: 'bg-[var(--action-s)] text-white',
-  D: 'bg-[var(--action-d)] text-white',
-  P: 'bg-[var(--action-p)] text-white',
-  R: 'bg-[var(--action-r)] text-white',
+  H: 'bg-[var(--action-h)]',
+  S: 'bg-[var(--action-s)]',
+  D: 'bg-[var(--action-d)]',
+  P: 'bg-[var(--action-p)]',
+  R: 'bg-[var(--action-r)]',
 }
 
-export function StrategyCell({ action, compact = false }: StrategyCellProps) {
+export function StrategyCell({ action }: StrategyCellProps) {
   return (
     <td
-      className={`strategy-cell text-center font-mono font-semibold tracking-wider select-none ${
-        compact ? 'text-[10px] px-0.5 py-[3px]' : 'text-xs px-1 py-1.5'
-      } ${ACTION_STYLES[action]}`}
+      className={`strategy-cell text-center font-mono font-bold text-[11px] text-white tracking-wide select-none px-0 py-[5px] w-9 border border-white/[0.06] ${ACTION_STYLES[action]}`}
     >
       {action}
     </td>

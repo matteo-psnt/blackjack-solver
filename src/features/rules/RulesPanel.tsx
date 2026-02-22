@@ -12,51 +12,56 @@ import { useRulesStore } from '../../store/rulesStore'
 import { RuleRow } from './RuleRow'
 import type { BlackjackRules } from '../../core/blackjack/types'
 
+function SectionHeading({ children }: { children: string }) {
+  return (
+    <p className="text-[9px] font-medium uppercase tracking-[0.2em] text-muted-foreground/50 mt-5 mb-1 first:mt-2">
+      {children}
+    </p>
+  )
+}
+
 export function RulesPanel() {
   const { rules, setRules, resetRules } = useRulesStore()
 
   return (
-    <aside className="w-[280px] shrink-0 border-r border-border flex flex-col h-full">
+    <aside className="w-[260px] shrink-0 border-r border-border flex flex-col h-full">
       {/* Wordmark */}
-      <div className="px-5 py-5 border-b border-border">
-        <h1 className="text-lg font-serif tracking-wide text-foreground">The Counting Room</h1>
-        <p className="text-[11px] text-muted-foreground mt-0.5">Basic Strategy Analyzer</p>
+      <div className="px-6 pt-6 pb-5 border-b border-border">
+        <h1 className="font-serif text-xl tracking-wide text-foreground leading-none">
+          The Counting Room
+        </h1>
+        <p className="text-[11px] text-muted-foreground/60 mt-1.5">Basic Blackjack Strategy Analyzer</p>
       </div>
 
-      {/* Scrollable rule controls */}
-      <div className="flex-1 overflow-y-auto px-5 py-3">
+      {/* Controls */}
+      <div className="flex-1 overflow-y-auto px-6 py-2">
 
-        {/* Game Setup */}
-        <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2 mt-1">
-          Game Setup
-        </p>
+        <SectionHeading>Game Setup</SectionHeading>
 
-        <RuleRow label="Decks" description="Number of decks in shoe">
+        <RuleRow label="Decks">
           <Select
             value={String(rules.decks)}
             onValueChange={(v) => setRules({ decks: parseInt(v) as BlackjackRules['decks'] })}
           >
-            <SelectTrigger className="w-20 h-7 text-xs">
+            <SelectTrigger className="w-[72px] h-7 text-xs">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               {([1, 2, 4, 6, 8] as const).map((d) => (
-                <SelectItem key={d} value={String(d)}>
-                  {d}
-                </SelectItem>
+                <SelectItem key={d} value={String(d)}>{d}</SelectItem>
               ))}
             </SelectContent>
           </Select>
         </RuleRow>
 
-        <RuleRow label="Blackjack Pays" description="Natural blackjack payout">
+        <RuleRow label="Blackjack Pays">
           <Select
             value={String(rules.blackjackPayout)}
             onValueChange={(v) =>
               setRules({ blackjackPayout: parseFloat(v) as BlackjackRules['blackjackPayout'] })
             }
           >
-            <SelectTrigger className="w-20 h-7 text-xs">
+            <SelectTrigger className="w-[72px] h-7 text-xs">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -67,42 +72,34 @@ export function RulesPanel() {
           </Select>
         </RuleRow>
 
-        <Separator className="my-3" />
+        <Separator className="mt-4 mb-1 opacity-40" />
+        <SectionHeading>Dealer</SectionHeading>
 
-        {/* Dealer Rules */}
-        <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
-          Dealer Rules
-        </p>
-
-        <RuleRow label="Dealer Hits Soft 17" description="H17 increases house edge">
+        <RuleRow label="Hits Soft 17" description="Dealer draws on soft 17">
           <Switch
             checked={rules.dealerHitsSoft17}
             onCheckedChange={(v) => setRules({ dealerHitsSoft17: v })}
           />
         </RuleRow>
 
-        <Separator className="my-3" />
+        <Separator className="mt-4 mb-1 opacity-40" />
+        <SectionHeading>Player Options</SectionHeading>
 
-        {/* Player Options */}
-        <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
-          Player Options
-        </p>
-
-        <RuleRow label="Double After Split" description="DAS — reduces house edge">
+        <RuleRow label="Double After Split" description="DAS">
           <Switch
             checked={rules.doubleAfterSplit}
             onCheckedChange={(v) => setRules({ doubleAfterSplit: v })}
           />
         </RuleRow>
 
-        <RuleRow label="Double On" description="Hands eligible for doubling">
+        <RuleRow label="Double On">
           <Select
             value={rules.doubleRestriction}
             onValueChange={(v) =>
               setRules({ doubleRestriction: v as BlackjackRules['doubleRestriction'] })
             }
           >
-            <SelectTrigger className="w-24 h-7 text-xs">
+            <SelectTrigger className="w-[72px] h-7 text-xs">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -113,12 +110,12 @@ export function RulesPanel() {
           </Select>
         </RuleRow>
 
-        <RuleRow label="Surrender" description="Late or early surrender option">
+        <RuleRow label="Surrender">
           <Select
             value={rules.surrender}
             onValueChange={(v) => setRules({ surrender: v as BlackjackRules['surrender'] })}
           >
-            <SelectTrigger className="w-20 h-7 text-xs">
+            <SelectTrigger className="w-[72px] h-7 text-xs">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -129,27 +126,24 @@ export function RulesPanel() {
           </Select>
         </RuleRow>
 
-        <Separator className="my-3" />
+        <Separator className="mt-4 mb-1 opacity-40" />
+        <SectionHeading>Splits</SectionHeading>
 
-        {/* Split Rules */}
-        <p className="text-[10px] uppercase tracking-widest text-muted-foreground mb-2">
-          Split Rules
-        </p>
-
-        <RuleRow label="Re-split Aces" description="RSA — allows re-splitting aces">
+        <RuleRow label="Re-split Aces" description="RSA">
           <Switch
             checked={rules.resplitAces}
             onCheckedChange={(v) => setRules({ resplitAces: v })}
           />
         </RuleRow>
+
       </div>
 
       {/* Footer */}
-      <div className="px-5 py-4 border-t border-border">
+      <div className="px-6 py-4 border-t border-border">
         <Button
-          variant="outline"
+          variant="ghost"
           size="sm"
-          className="w-full text-xs"
+          className="w-full text-xs text-muted-foreground hover:text-foreground"
           onClick={resetRules}
         >
           Reset to Defaults

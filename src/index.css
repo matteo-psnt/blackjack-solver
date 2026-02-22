@@ -120,8 +120,8 @@
 
 /* Action color palette — balanced luminance, readable against dark bg */
 :root {
-  --action-h: oklch(0.54 0.18 22);   /* Hit: red */
-  --action-s: oklch(0.50 0.15 148);  /* Stand: green */
+  --action-h: oklch(0.50 0.15 148);  /* Hit: green */
+  --action-s: oklch(0.54 0.18 22);   /* Stand: red */
   --action-d: oklch(0.56 0.17 72);   /* Double: amber-orange */
   --action-p: oklch(0.50 0.16 248);  /* Split: blue */
   --action-r: oklch(0.48 0.10 320);  /* Surrender: mauve */
