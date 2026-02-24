@@ -15,7 +15,7 @@ const ACTION_STYLES: Record<DisplayAction, string> = {
 export function StrategyCell({ action }: StrategyCellProps) {
   return (
     <td
-      className={`strategy-cell text-center font-mono font-bold text-[11px] text-white tracking-wide select-none px-0 py-[5px] w-9 border border-white/[0.06] ${ACTION_STYLES[action]}`}
+      className={`strategy-cell text-center font-mono font-bold text-[11px] text-white tracking-wide select-none px-0 py-[5px] w-9 ${ACTION_STYLES[action]}`}
     >
       {action}
     </td>

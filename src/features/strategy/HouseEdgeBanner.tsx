@@ -20,19 +20,19 @@ export function HouseEdgeBanner({ result, rules }: HouseEdgeBannerProps) {
   ].filter(Boolean) as string[]
 
   return (
-    <div className="border-b border-border px-8 py-6">
-      <div className="flex items-end justify-between gap-6">
+    <div className="border-b border-border px-6 py-3">
+      <div className="flex items-center justify-between gap-6">
         {/* Metric */}
-        <div>
-          <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground/60 mb-1">
-            {isPlayerEdge ? 'Player Edge' : 'House Edge'}
-          </p>
+        <div className="flex items-baseline gap-3">
           <p
             key={result.formatted}
-            className="text-5xl font-mono tabular-nums font-light animate-edge-flash leading-none"
+            className="text-3xl font-mono tabular-nums font-light animate-edge-flash leading-none"
             style={{ color: isPlayerEdge ? 'var(--action-s)' : 'var(--foreground)' }}
           >
             {result.formatted}
+          </p>
+          <p className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground/50">
+            {isPlayerEdge ? 'Player Edge' : 'House Edge'}
           </p>
         </div>
 
