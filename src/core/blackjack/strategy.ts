@@ -98,7 +98,7 @@ export function computeStrategyTable(rules: BlackjackRules): StrategyTable {
         hitMemo,
       )
 
-      row[upcard] = { action: result.action, ev: result.ev }
+      row[upcard] = { action: result.action, ev: result.ev, breakdown: result.breakdown }
     }
 
     return row

@@ -12,7 +12,6 @@ export function StrategyTable({ rows }: StrategyTableProps) {
     <div className="overflow-x-auto">
       <table className="border-collapse w-auto">
         <thead>
-          {/* Dealer upcard spanning label */}
           <tr>
             <th className="w-12" />
             <th
@@ -22,7 +21,6 @@ export function StrategyTable({ rows }: StrategyTableProps) {
               Dealer Upcard
             </th>
           </tr>
-          {/* Individual upcard headers */}
           <tr>
             <th className="w-12 text-right pr-3 pb-1 text-[9px] font-medium uppercase tracking-widest text-muted-foreground/50">
               Hand
@@ -44,7 +42,13 @@ export function StrategyTable({ rows }: StrategyTableProps) {
                 {label}
               </td>
               {DEALER_UPCARDS.map((up) => (
-                <StrategyCell key={up} action={row[up].action} />
+                <StrategyCell
+                  key={up}
+                  action={row[up].action}
+                  breakdown={row[up].breakdown}
+                  handLabel={label}
+                  upcardLabel={up}
+                />
               ))}
             </tr>
           ))}

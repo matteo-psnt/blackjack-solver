@@ -4,6 +4,7 @@ import type {
   DealerOutcomes,
   DealerUpcard,
   DisplayAction,
+  EvBreakdown,
   Rank,
 } from './types'
 import { ALL_RANKS, INFINITE_DECK } from './constants'
@@ -273,10 +274,11 @@ export function evSplit(
 export interface EvOptimalResult {
   ev: number
   action: DisplayAction
+  breakdown: EvBreakdown
 }
 
 /**
- * Computes the optimal EV and best action for a given hand.
+ * Computes the optimal EV and best action for a given hand, plus the EV of every available action.
  *
  * dealerOutcomes must be pre-computed for this upcard (conditioned on no-BJ if applicable).
  * canSplit: set false for post-hit hands.
@@ -297,28 +299,30 @@ export function evOptimal(
   canSurrender = true,
 ): EvOptimalResult {
   const standEV = evStand(total, dealerOutcomes)
-  let best: EvOptimalResult = { ev: standEV, action: 'S' }
-
-  // Hit
   const hitEV = evHit(total, isSoft, dealerOutcomes, composition, hitMemo)
-  if (hitEV > best.ev) best = { ev: hitEV, action: 'H' }
-
-  // Double (two-card hand only)
   const dblEV = evDouble(total, isSoft, dealerOutcomes, composition, rules.doubleRestriction)
+  const splitEV =
+    canSplit && isPair && pairRank !== null
+      ? evSplit(pairRank, dealerUpcard, dealerOutcomes, rules, composition, dealerMemo)
+      : null
+  const surrenderEV = canSurrender && rules.surrender !== 'none' ? -0.5 : null
+
+  const breakdown: EvBreakdown = {
+    S: standEV,
+    H: hitEV,
+    D: dblEV,
+    P: splitEV,
+    R: surrenderEV,
+  }
+
+  // Pick best action
+  let best: { ev: number; action: DisplayAction } = { ev: standEV, action: 'S' }
+  if (hitEV > best.ev) best = { ev: hitEV, action: 'H' }
   if (dblEV !== null && dblEV > best.ev) best = { ev: dblEV, action: 'D' }
+  if (splitEV !== null && splitEV > best.ev) best = { ev: splitEV, action: 'P' }
+  if (surrenderEV !== null && surrenderEV > best.ev) best = { ev: surrenderEV, action: 'R' }
 
-  // Split (pairs only)
-  if (canSplit && isPair && pairRank !== null) {
-    const splitEV = evSplit(pairRank, dealerUpcard, dealerOutcomes, rules, composition, dealerMemo)
-    if (splitEV > best.ev) best = { ev: splitEV, action: 'P' }
-  }
-
-  // Surrender
-  if (canSurrender && rules.surrender !== 'none' && -0.5 > best.ev) {
-    best = { ev: -0.5, action: 'R' }
-  }
-
-  return best
+  return { ...best, breakdown }
 }
 
 // ---------------------------------------------------------------------------

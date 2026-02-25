@@ -40,9 +40,18 @@ export interface DealerOutcomes {
   bust: number
 }
 
+export interface EvBreakdown {
+  S: number
+  H: number
+  D: number | null
+  P: number | null
+  R: number | null
+}
+
 export interface StrategyCell {
   action: DisplayAction
   ev: number
+  breakdown: EvBreakdown
 }
 
 export type StrategyRow = Record<DealerUpcard, StrategyCell>
