@@ -136,6 +136,15 @@
   animation: edge-flash 300ms ease-out;
 }
 
+@keyframes cell-changed {
+  0% { opacity: 0.55; }
+  100% { opacity: 0; }
+}
+
+.animate-cell-changed {
+  animation: cell-changed 500ms ease-out forwards;
+}
+
 .strategy-cell {
   transition: background-color 150ms ease;
 }

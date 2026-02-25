@@ -1,3 +1,4 @@
+import { useEffect, useRef, useState } from 'react'
 import type { DisplayAction, EvBreakdown } from '../../core/blackjack/types'
 import {
   Tooltip,
@@ -49,13 +50,26 @@ export function StrategyCell({ action, breakdown, handLabel, upcardLabel }: Stra
     .filter((entry): entry is [DisplayAction, number] => entry[1] !== null)
     .sort((a, b) => b[1] - a[1])
 
+  const prevActionRef = useRef<DisplayAction>(action)
+  const [flashCount, setFlashCount] = useState(0)
+
+  useEffect(() => {
+    if (prevActionRef.current !== action) {
+      prevActionRef.current = action
+      setFlashCount(c => c + 1)
+    }
+  }, [action])
+
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <td
-          className={`strategy-cell text-center font-mono font-bold text-[11px] text-white tracking-wide select-none px-0 py-[5px] w-9 cursor-default ${ACTION_STYLES[action]}`}
+          className={`strategy-cell relative overflow-hidden text-center font-mono font-bold text-[11px] text-white tracking-wide select-none px-0 py-[5px] w-9 cursor-default ${ACTION_STYLES[action]}`}
         >
           {action}
+          {flashCount > 0 && (
+            <span key={flashCount} className="animate-cell-changed pointer-events-none absolute inset-0 bg-white" />
+          )}
         </td>
       </TooltipTrigger>
       <TooltipContent side="top" className="px-3 py-2 flex flex-col gap-1.5 min-w-[140px]">
