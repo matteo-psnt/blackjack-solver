@@ -11,6 +11,7 @@ interface StrategyCellProps {
   breakdown: EvBreakdown
   handLabel: string
   upcardLabel: string
+  evOverlay: boolean
 }
 
 const ACTION_STYLES: Record<DisplayAction, string> = {
@@ -42,8 +43,16 @@ function formatEV(ev: number): string {
   return `${sign}${(ev * 100).toFixed(1)}¢`
 }
 
-export function StrategyCell({ action, breakdown, handLabel, upcardLabel }: StrategyCellProps) {
-  // Build sorted list of available actions (non-null), descending by EV
+/** Red-to-green heatmap background for optimal EV. */
+function evHeatmapBg(ev: number): string {
+  const t = Math.min(Math.abs(ev) / 0.55, 1)
+  const l = 0.24 + t * 0.14
+  const c = t * 0.18
+  const h = ev >= 0 ? 148 : 22
+  return `oklch(${l.toFixed(3)} ${c.toFixed(3)} ${h})`
+}
+
+export function StrategyCell({ action, breakdown, handLabel, upcardLabel, evOverlay }: StrategyCellProps) {
   const entries = (
     Object.entries(breakdown) as [DisplayAction, number | null][]
   )
@@ -60,11 +69,14 @@ export function StrategyCell({ action, breakdown, handLabel, upcardLabel }: Stra
     }
   }, [action])
 
+  const optimalEv = entries[0]?.[1] ?? 0
+
   return (
     <Tooltip>
       <TooltipTrigger asChild>
         <td
-          className={`strategy-cell relative overflow-hidden text-center font-mono font-bold text-[11px] text-white tracking-wide select-none px-0 py-[5px] w-9 cursor-default ${ACTION_STYLES[action]}`}
+          className={`strategy-cell relative overflow-hidden text-center font-mono font-bold text-[11px] text-white tracking-wide select-none px-0 py-[5px] w-9 cursor-default transition-colors duration-300 ${evOverlay ? '' : ACTION_STYLES[action]}`}
+          style={evOverlay ? { backgroundColor: evHeatmapBg(optimalEv) } : undefined}
         >
           {action}
           {flashCount > 0 && (

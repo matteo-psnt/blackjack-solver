@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { StrategyTable } from '../../core/blackjack/types'
 import { StrategyTable as StrategyTableComponent } from './StrategyTable'
 import { ActionLegend } from './ActionLegend'
@@ -57,6 +58,8 @@ function SectionLabel({ children }: { children: string }) {
 }
 
 export function StrategyGrid({ table }: StrategyGridProps) {
+  const [evOverlay, setEvOverlay] = useState(false)
+
   const hardRows = Object.entries(table.hard).map(([key, row]) => ({
     key: key as keyof typeof table.hard,
     label: HARD_LABELS[key] ?? key,
@@ -77,21 +80,44 @@ export function StrategyGrid({ table }: StrategyGridProps) {
 
   return (
     <div className="flex flex-col gap-3 px-6 py-4">
-      <ActionLegend />
+      <div className="flex items-center justify-between">
+        <ActionLegend />
+        <div className="flex items-center gap-2">
+          {evOverlay && (
+            <div className="flex items-center gap-1.5 text-[10px] font-mono text-muted-foreground">
+              <span className="w-2.5 h-2.5 rounded-sm inline-block" style={{ backgroundColor: 'oklch(0.38 0.18 22)' }} />
+              <span>lose</span>
+              <span className="mx-0.5 opacity-40">—</span>
+              <span className="w-2.5 h-2.5 rounded-sm inline-block" style={{ backgroundColor: 'oklch(0.38 0.18 148)' }} />
+              <span>win</span>
+            </div>
+          )}
+          <button
+            onClick={() => setEvOverlay(v => !v)}
+            className={`text-[10px] font-mono tracking-wide px-2 py-1 rounded border transition-colors ${
+              evOverlay
+                ? 'border-muted-foreground/50 text-foreground bg-muted/40'
+                : 'border-muted-foreground/20 text-muted-foreground hover:text-foreground hover:border-muted-foreground/40'
+            }`}
+          >
+            EV heatmap
+          </button>
+        </div>
+      </div>
 
       <section>
         <SectionLabel>Hard</SectionLabel>
-        <StrategyTableComponent rows={hardRows} />
+        <StrategyTableComponent rows={hardRows} evOverlay={evOverlay} />
       </section>
 
       <section>
         <SectionLabel>Soft</SectionLabel>
-        <StrategyTableComponent rows={softRows} />
+        <StrategyTableComponent rows={softRows} evOverlay={evOverlay} />
       </section>
 
       <section>
         <SectionLabel>Pairs</SectionLabel>
-        <StrategyTableComponent rows={pairRows} />
+        <StrategyTableComponent rows={pairRows} evOverlay={evOverlay} />
       </section>
     </div>
   )
