@@ -67,7 +67,6 @@ export function RulesPanel() {
             <SelectContent>
               <SelectItem value="1.5">3:2</SelectItem>
               <SelectItem value="1.2">6:5</SelectItem>
-              <SelectItem value="1">1:1</SelectItem>
             </SelectContent>
           </Select>
         </RuleRow>

@@ -17,7 +17,7 @@ export interface BlackjackRules {
   dealerPeek: boolean // true = US peek (default); false = ENHC / no-peek
 
   // Payout
-  blackjackPayout: 1.5 | 1.2 | 1.0 // 3:2, 6:5, 1:1
+  blackjackPayout: 1.5 | 1.2 // 3:2, 6:5
 
   // Player options
   doubleAfterSplit: boolean
