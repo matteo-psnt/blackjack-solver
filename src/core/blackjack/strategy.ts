@@ -17,7 +17,7 @@ import {
   PAIR_HAND_KEYS,
   SOFT_HAND_KEYS,
 } from './constants'
-import { createDealerMemo } from './dealerProbabilities'
+import { createDealerMemo, dealerBJProbability } from './dealerProbabilities'
 import { evOptimal, getDealerOutcomesForStrategy } from './ev'
 
 // ---------------------------------------------------------------------------
@@ -85,6 +85,16 @@ export function computeStrategyTable(rules: BlackjackRules): StrategyTable {
       // Fresh hit memo per (hand, upcard) — could share per upcard for performance
       const hitMemo = new Map<string, number>()
 
+      // Early surrender is decided before the dealer peeks, so the threshold for
+      // choosing surrender (in the no-BJ-conditioned space) is more permissive:
+      //   threshold = (-0.5 + pBJ) / (1 - pBJ)
+      // For late/no surrender (or upcards with no BJ risk), use the default -0.5.
+      let effectiveSurrenderThreshold: number | undefined
+      if (rules.surrender === 'early') {
+        const pBJ = dealerBJProbability(upcard)
+        if (pBJ > 0) effectiveSurrenderThreshold = (-0.5 + pBJ) / (1 - pBJ)
+      }
+
       const result = evOptimal(
         params.total,
         params.isSoft,
@@ -96,6 +106,9 @@ export function computeStrategyTable(rules: BlackjackRules): StrategyTable {
         composition,
         dealerMemo,
         hitMemo,
+        true,
+        true,
+        effectiveSurrenderThreshold,
       )
 
       row[upcard] = { action: result.action, ev: result.ev, breakdown: result.breakdown }

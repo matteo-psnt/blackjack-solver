@@ -13,7 +13,7 @@ function App() {
 
   return (
     <TooltipProvider delayDuration={300}>
-      <div className="flex h-svh overflow-hidden">
+      <div className="flex h-svh overflow-hidden min-w-[860px]">
         <RulesPanel />
         <main className="flex-1 flex flex-col overflow-hidden">
           <HouseEdgeBanner result={houseEdge} rules={rules} />

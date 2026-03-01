@@ -65,21 +65,14 @@ export function computeHouseEdge(rules: BlackjackRules): HouseEdgeResult {
           cellEV = pBJ * 0 + (1 - pBJ) * rules.blackjackPayout
         } else if (pBJ > 0) {
           // Dealer may have BJ; player does not have natural
-          let evGivenBJ: number
-          if (rules.surrender === 'early') {
-            evGivenBJ = -0.5 // early surrender beats losing full bet
-          } else {
-            evGivenBJ = -1.0 // player loses original bet
-          }
-
-          // Conditioned on no dealer BJ: play normally
-          const dealerOutcomesNoBlackjack = rules.dealerPeek
-            ? dealerOutcomesNoBJ(upcard, rules, composition, dealerMemo)
-            : dealerOutcomesFromUpcard(upcard, rules, composition, dealerMemo)
+          // Always condition on no BJ here — the BJ scenario is handled by the pBJ * (-1.0) term.
+          // For ENHC (no peek), the player doesn't know BJ hasn't occurred, but the house
+          // edge formula still separates the BJ and no-BJ cases correctly.
+          const dealerOutcomesNoBlackjack = dealerOutcomesNoBJ(upcard, rules, composition, dealerMemo)
 
           const hand = playerHand(rank1, rank2)
           const hitMemo = new Map<string, number>()
-          const { ev: evGivenNoBJ } = evOptimal(
+          const { ev: evGivenNoBJ, action } = evOptimal(
             hand.total,
             hand.isSoft,
             hand.isPair,
@@ -92,7 +85,18 @@ export function computeHouseEdge(rules: BlackjackRules): HouseEdgeResult {
             hitMemo,
           )
 
-          cellEV = pBJ * evGivenBJ + (1 - pBJ) * evGivenNoBJ
+          // With ENHC (no peek), the player acts before dealer checks for BJ.
+          // If they doubled, they lose 2 units to dealer BJ; if they split, 2 units
+          // (one per initial hand). With peek, dealer BJ is always caught first so
+          // player always loses exactly 1 unit regardless of intended action.
+          const evGivenBJ = !rules.dealerPeek && (action === 'D' || action === 'P')
+            ? -2.0
+            : -1.0
+
+          // EV of playing: combine BJ and no-BJ scenarios
+          const evPlay = pBJ * evGivenBJ + (1 - pBJ) * evGivenNoBJ
+          // Early surrender: player decides before peek — surrender only when better than playing
+          cellEV = rules.surrender === 'early' ? Math.max(evPlay, -0.5) : evPlay
         } else {
           // No dealer BJ possible (upcards 2-9)
           const dealerOutcomes = dealerOutcomesFromUpcard(upcard, rules, composition, dealerMemo)

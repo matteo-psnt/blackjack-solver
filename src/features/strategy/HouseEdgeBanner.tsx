@@ -13,8 +13,10 @@ export function HouseEdgeBanner({ result, rules }: HouseEdgeBannerProps) {
   const tags = [
     `${rules.decks} Decks`,
     rules.dealerHitsSoft17 ? 'H17' : 'S17',
+    rules.dealerPeek ? 'Peek' : 'ENHC',
     `BJ ${payoutLabel}`,
     rules.doubleAfterSplit ? 'DAS' : 'No DAS',
+    `Max ${rules.maxSplits} hands`,
     rules.surrender === 'late' ? 'Late Surrender' : rules.surrender === 'early' ? 'Early Surrender' : 'No Surrender',
     rules.resplitAces ? 'RSA' : null,
   ].filter(Boolean) as string[]

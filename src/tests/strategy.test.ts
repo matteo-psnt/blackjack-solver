@@ -77,4 +77,117 @@ describe('computeStrategyTable', () => {
       expect(row[upcard].action).toBe('S')
     }
   })
+
+  it('all breakdown EVs are finite numbers or null', () => {
+    for (const section of [table.hard, table.soft, table.pairs]) {
+      for (const row of Object.values(section)) {
+        for (const cell of Object.values(row)) {
+          for (const ev of Object.values(cell.breakdown)) {
+            if (ev !== null) expect(Number.isFinite(ev)).toBe(true)
+          }
+        }
+      }
+    }
+  })
+})
+
+describe('early surrender vs late surrender strategy differences', () => {
+  const earlySurrRules = { ...DEFAULT_RULES, surrender: 'early' as const }
+  const lateSurrRules = { ...DEFAULT_RULES, surrender: 'late' as const }
+  const earlyTable = computeStrategyTable(earlySurrRules)
+  const lateTable = computeStrategyTable(lateSurrRules)
+
+  it('early surrender produces at least as many R cells as late surrender', () => {
+    let earlyR = 0, lateR = 0
+    for (const section of ['hard', 'soft', 'pairs'] as const) {
+      for (const key of Object.keys(earlyTable[section])) {
+        for (const upcard of ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'A'] as const) {
+          if ((earlyTable[section] as Record<string, Record<string, { action: string }>>)[key][upcard].action === 'R') earlyR++
+          if ((lateTable[section] as Record<string, Record<string, { action: string }>>)[key][upcard].action === 'R') lateR++
+        }
+      }
+    }
+    expect(earlyR).toBeGreaterThan(lateR)
+  })
+
+  it('early surrender adds more R cells vs dealer A than vs other upcards', () => {
+    // Effective threshold vs A is ≈ -0.278 (vs -0.5 for late), so many more hands surrender
+    let extraVsA = 0, extraVsOther = 0
+    for (const section of ['hard', 'soft', 'pairs'] as const) {
+      for (const key of Object.keys(earlyTable[section])) {
+        const earlyRow = (earlyTable[section] as Record<string, Record<string, { action: string }>>)[key]
+        const lateRow = (lateTable[section] as Record<string, Record<string, { action: string }>>)[key]
+        if (earlyRow['A'].action === 'R' && lateRow['A'].action !== 'R') extraVsA++
+        for (const upcard of ['2', '3', '4', '5', '6', '7', '8', '9'] as const) {
+          if (earlyRow[upcard].action === 'R' && lateRow[upcard].action !== 'R') extraVsOther++
+        }
+      }
+    }
+    // No early surrender benefit vs 2-9 (no BJ possible), but lots vs A
+    expect(extraVsOther).toBe(0)
+    expect(extraVsA).toBeGreaterThan(0)
+  })
+
+  it('early surrender: hard 14 vs A should be R (EV_noBJ ≈ -0.40 < threshold -0.278)', () => {
+    // Hard 14 vs A with late surrender: evNoBJ > -0.5 so action = H
+    // With early surrender: evNoBJ < -0.278 so action = R
+    expect(lateTable.hard['hard14']['A'].action).not.toBe('R')
+    expect(earlyTable.hard['hard14']['A'].action).toBe('R')
+  })
+
+  it('early surrender vs 2-9 upcards: identical to late surrender (no BJ possible)', () => {
+    for (const upcard of ['2', '3', '4', '5', '6', '7', '8', '9'] as const) {
+      for (const key of Object.keys(earlyTable.hard) as (keyof typeof earlyTable.hard)[]) {
+        expect(earlyTable.hard[key][upcard].action).toBe(lateTable.hard[key][upcard].action)
+      }
+    }
+  })
+})
+
+describe('no surrender rules', () => {
+  it('no R actions when surrender = none', () => {
+    const noSurrTable = computeStrategyTable({ ...DEFAULT_RULES, surrender: 'none' })
+    for (const section of [noSurrTable.hard, noSurrTable.soft, noSurrTable.pairs]) {
+      for (const row of Object.values(section)) {
+        for (const cell of Object.values(row)) {
+          expect(cell.action).not.toBe('R')
+        }
+      }
+    }
+  })
+})
+
+describe('rule variations affect strategy', () => {
+  it('disabling DAS changes some split decisions', () => {
+    const withDAS = computeStrategyTable({ ...DEFAULT_RULES, doubleAfterSplit: true })
+    const noDAS = computeStrategyTable({ ...DEFAULT_RULES, doubleAfterSplit: false })
+    let diffs = 0
+    for (const key of Object.keys(withDAS.pairs) as (keyof typeof withDAS.pairs)[]) {
+      for (const upcard of ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'A'] as const) {
+        if (withDAS.pairs[key][upcard].action !== noDAS.pairs[key][upcard].action) diffs++
+      }
+    }
+    expect(diffs).toBeGreaterThan(0)
+  })
+
+  it('double restriction 10-11 removes D actions on hard 9', () => {
+    const restricted = computeStrategyTable({ ...DEFAULT_RULES, doubleRestriction: '10-11' })
+    const row = restricted.hard['hard9']
+    for (const upcard of ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'A'] as const) {
+      expect(row[upcard].action).not.toBe('D')
+    }
+  })
+
+  it('RSA enabled: strategy table computes without error', () => {
+    const rsaTable = computeStrategyTable({ ...DEFAULT_RULES, resplitAces: true })
+    expect(rsaTable.pairs['pairA']['A'].action).toBe('P')
+  })
+
+  it('max splits 2 vs 4: strategy table computes without error for both', () => {
+    const t2 = computeStrategyTable({ ...DEFAULT_RULES, maxSplits: 2 })
+    const t4 = computeStrategyTable({ ...DEFAULT_RULES, maxSplits: 4 })
+    // Both should always split A-A
+    expect(t2.pairs['pairA']['6'].action).toBe('P')
+    expect(t4.pairs['pairA']['6'].action).toBe('P')
+  })
 })

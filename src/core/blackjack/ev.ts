@@ -297,6 +297,13 @@ export function evOptimal(
   hitMemo: Map<string, number>,
   canSplit = true,
   canSurrender = true,
+  /**
+   * Effective surrender threshold for the comparison only — used when the
+   * surrender decision is made before dealer peek (early surrender vs A/T).
+   * The threshold is (-0.5 + pBJ) / (1 - pBJ), which is more permissive than
+   * -0.5 (the actual outcome). breakdown.R always reports -0.5.
+   */
+  effectiveSurrenderThreshold?: number,
 ): EvOptimalResult {
   const standEV = evStand(total, dealerOutcomes)
   const hitEV = evHit(total, isSoft, dealerOutcomes, composition, hitMemo)
@@ -315,12 +322,15 @@ export function evOptimal(
     R: surrenderEV,
   }
 
-  // Pick best action
+  // Pick best action. For surrender, use the effective threshold for comparison
+  // but always report the actual EV (-0.5) if chosen.
+  const surrenderThreshold = surrenderEV !== null ? (effectiveSurrenderThreshold ?? surrenderEV) : null
+
   let best: { ev: number; action: DisplayAction } = { ev: standEV, action: 'S' }
   if (hitEV > best.ev) best = { ev: hitEV, action: 'H' }
   if (dblEV !== null && dblEV > best.ev) best = { ev: dblEV, action: 'D' }
   if (splitEV !== null && splitEV > best.ev) best = { ev: splitEV, action: 'P' }
-  if (surrenderEV !== null && surrenderEV > best.ev) best = { ev: surrenderEV, action: 'R' }
+  if (surrenderThreshold !== null && surrenderThreshold > best.ev) best = { ev: -0.5, action: 'R' }
 
   return { ...best, breakdown }
 }

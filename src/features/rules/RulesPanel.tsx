@@ -38,7 +38,7 @@ export function RulesPanel() {
 
         <SectionHeading>Game Setup</SectionHeading>
 
-        <RuleRow label="Decks">
+        <RuleRow label="Decks" description="display only — infinite-deck model">
           <Select
             value={String(rules.decks)}
             onValueChange={(v) => setRules({ decks: parseInt(v) as BlackjackRules['decks'] })}
@@ -78,6 +78,13 @@ export function RulesPanel() {
           <Switch
             checked={rules.dealerHitsSoft17}
             onCheckedChange={(v) => setRules({ dealerHitsSoft17: v })}
+          />
+        </RuleRow>
+
+        <RuleRow label="Dealer Peek" description={rules.dealerPeek ? 'US rules' : 'ENHC — no hole card'}>
+          <Switch
+            checked={rules.dealerPeek}
+            onCheckedChange={(v) => setRules({ dealerPeek: v })}
           />
         </RuleRow>
 
@@ -133,6 +140,22 @@ export function RulesPanel() {
             checked={rules.resplitAces}
             onCheckedChange={(v) => setRules({ resplitAces: v })}
           />
+        </RuleRow>
+
+        <RuleRow label="Max Splits">
+          <Select
+            value={String(rules.maxSplits)}
+            onValueChange={(v) => setRules({ maxSplits: parseInt(v) as BlackjackRules['maxSplits'] })}
+          >
+            <SelectTrigger className="w-[72px] h-7 text-xs">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {([2, 3, 4] as const).map((n) => (
+                <SelectItem key={n} value={String(n)}>{n} hands</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </RuleRow>
 
       </div>
