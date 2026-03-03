@@ -106,6 +106,115 @@ describe('dealerOutcomesNoBJ', () => {
   })
 })
 
+describe('buildShoeComposition', () => {
+  it('1-deck: total cards = 52', () => {
+    const comp = buildShoeComposition(1)
+    const total = Object.values(comp).reduce((a, b) => a + b, 0)
+    expect(total).toBe(52)
+  })
+
+  it('6-deck: total cards = 312', () => {
+    const comp = buildShoeComposition(6)
+    const total = Object.values(comp).reduce((a, b) => a + b, 0)
+    expect(total).toBe(312)
+  })
+
+  it('1-deck: T has 16 cards (10,J,Q,K × 4 suits)', () => {
+    expect(buildShoeComposition(1)['T']).toBe(16)
+  })
+
+  it('1-deck: each non-T rank has 4 cards', () => {
+    const comp = buildShoeComposition(1)
+    for (const rank of ['A', '2', '3', '4', '5', '6', '7', '8', '9'] as const) {
+      expect(comp[rank]).toBe(4)
+    }
+  })
+
+  it('n-deck scales linearly: 2-deck = 2 × 1-deck', () => {
+    const one = buildShoeComposition(1)
+    const two = buildShoeComposition(2)
+    for (const rank of Object.keys(one) as (keyof typeof one)[]) {
+      expect(two[rank]).toBe(2 * one[rank])
+    }
+  })
+})
+
+describe('removeCard', () => {
+  it('removes one card of the specified rank', () => {
+    const comp = buildShoeComposition(1)
+    const after = removeCard(comp, 'A')
+    expect(after['A']).toBe(comp['A'] - 1)
+  })
+
+  it('does not affect other ranks', () => {
+    const comp = buildShoeComposition(1)
+    const after = removeCard(comp, 'A')
+    for (const rank of ['2', '3', '4', '5', '6', '7', '8', '9', 'T'] as const) {
+      expect(after[rank]).toBe(comp[rank])
+    }
+  })
+
+  it('total decreases by exactly 1', () => {
+    const comp = buildShoeComposition(6)
+    const after = removeCard(comp, 'T')
+    const before = Object.values(comp).reduce((a, b) => a + b, 0)
+    const afterTotal = Object.values(after).reduce((a, b) => a + b, 0)
+    expect(afterTotal).toBe(before - 1)
+  })
+
+  it('does not mutate the original composition', () => {
+    const comp = buildShoeComposition(1)
+    const original = comp['A']
+    removeCard(comp, 'A')
+    expect(comp['A']).toBe(original)
+  })
+
+  it('clamps to 0 when rank count is already 0', () => {
+    const comp = buildShoeComposition(1)
+    // Remove all 4 aces then one more
+    let c = comp
+    for (let i = 0; i < 4; i++) c = removeCard(c, 'A')
+    const after = removeCard(c, 'A')
+    expect(after['A']).toBe(0)
+  })
+})
+
+describe('dealer bust rate ordering', () => {
+  it('upcard 5 and 6 bust more than upcard 7 (S17)', () => {
+    const rules = { ...DEFAULT_RULES, dealerHitsSoft17: false }
+    const memo1 = createDealerMemo()
+    const memo2 = createDealerMemo()
+    const memo3 = createDealerMemo()
+    const b5 = dealerOutcomesFromUpcard('5', rules, INFINITE_DECK, memo1).bust
+    const b6 = dealerOutcomesFromUpcard('6', rules, INFINITE_DECK, memo2).bust
+    const b7 = dealerOutcomesFromUpcard('7', rules, INFINITE_DECK, memo3).bust
+    expect(b5).toBeGreaterThan(b7)
+    expect(b6).toBeGreaterThan(b7)
+  })
+
+  it('bust rates: 2<3<4<5<6 ordering holds (S17, dealer weak upcards)', () => {
+    const rules = { ...DEFAULT_RULES, dealerHitsSoft17: false }
+    const busts: Record<string, number> = {}
+    for (const up of ['2', '3', '4', '5', '6'] as const) {
+      const memo = createDealerMemo()
+      busts[up] = dealerOutcomesFromUpcard(up, rules, INFINITE_DECK, memo).bust
+    }
+    expect(busts['3']).toBeGreaterThan(busts['2'])
+    expect(busts['4']).toBeGreaterThan(busts['3'])
+    expect(busts['5']).toBeGreaterThan(busts['4'])
+    expect(busts['6']).toBeGreaterThan(busts['5'])
+  })
+
+  it('upcard A and T have low bust rates (< 25%)', () => {
+    const rules = { ...DEFAULT_RULES, dealerHitsSoft17: false }
+    for (const up of ['A', 'T'] as const) {
+      const memo = createDealerMemo()
+      const bust = dealerOutcomesFromUpcard(up, rules, INFINITE_DECK, memo).bust
+      expect(bust).toBeLessThan(0.25)
+    }
+  })
+})
+
 describe('dealerBJProbability', () => {
   it('upcard A: P(BJ) = 4/13 under infinite deck', () => {
     expect(dealerBJProbability('A', INFINITE_DECK)).toBeCloseTo(4 / 13, 10)

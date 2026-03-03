@@ -89,6 +89,22 @@ describe('computeStrategyTable', () => {
       }
     }
   })
+
+  it('cell.action is always the argmax of the non-null breakdown EVs', () => {
+    const actionKeys: Record<string, keyof typeof table.hard[keyof typeof table.hard][keyof typeof table.hard[keyof typeof table.hard]]['breakdown']> = {
+      H: 'H', S: 'S', D: 'D', P: 'P', R: 'R',
+    }
+    for (const section of [table.hard, table.soft, table.pairs]) {
+      for (const row of Object.values(section)) {
+        for (const cell of Object.values(row) as { action: string; ev: number; breakdown: Record<string, number | null> }[]) {
+          const best = Object.entries(cell.breakdown)
+            .filter(([, v]) => v !== null)
+            .reduce((a, b) => ((b[1] as number) > (a[1] as number) ? b : a))
+          expect(cell.action).toBe(best[0])
+        }
+      }
+    }
+  })
 })
 
 describe('early surrender vs late surrender strategy differences', () => {
