@@ -1,5 +1,5 @@
 import type { BlackjackRules, DealerUpcard, HouseEdgeResult, Rank } from './types'
-import { ALL_RANKS, INFINITE_DECK } from './constants'
+import { ALL_RANKS, buildShoeComposition, removeCard } from './constants'
 import {
   addCard,
   createDealerMemo,
@@ -33,42 +33,51 @@ function playerHand(
 }
 
 /**
- * Aggregates per-hand EVs over all player starting hands and dealer upcards
- * under the infinite-deck probability model.
+ * Aggregates per-hand EVs over all player starting hands and dealer upcards.
+ * Uses a finite-deck shoe composition derived from rules.decks, with proper
+ * without-replacement probabilities for the three dealt cards.
  *
  * Handles:
  * - Player and dealer naturals
  * - Early vs late surrender
- * - Dealer peek conditioning
+ * - Dealer peek / ENHC conditioning
  */
 export function computeHouseEdge(rules: BlackjackRules): HouseEdgeResult {
-  const composition = INFINITE_DECK
-  const tw = Object.values(composition).reduce((a, b) => a + b, 0) // 13
+  const baseComposition = buildShoeComposition(rules.decks)
+  const tw = Object.values(baseComposition).reduce((a, b) => a + b, 0) // 52 * decks
 
-  const dealerMemo = createDealerMemo()
   let totalEV = 0
 
   for (const rank1 of ALL_RANKS) {
+    // Probability of player's first card; remove it from shoe for subsequent draws.
+    const pRank1 = baseComposition[rank1] / tw
+    const comp1 = removeCard(baseComposition, rank1)
+    const tw1 = tw - 1
+
     for (const rank2 of ALL_RANKS) {
+      // Probability of player's second card given rank1 was dealt.
+      const pRank2 = comp1[rank2] / tw1
+      const comp2 = removeCard(comp1, rank2)
+      const tw2 = tw - 2
+
       for (const upcard of ALL_DEALER_UPCARDS) {
-        const pRank1 = composition[rank1] / tw
-        const pRank2 = composition[rank2] / tw
-        const pUpcard = composition[upcard as Rank] / tw
+        // Probability of dealer upcard given rank1 and rank2 were dealt.
+        const pUpcard = comp2[upcard as Rank] / tw2
         const pCombo = pRank1 * pRank2 * pUpcard
 
-        const pBJ = dealerBJProbability(upcard)
+        // Remaining shoe after the three known cards — used for all draw probabilities.
+        const playComp = removeCard(comp2, upcard as Rank)
+
+        const pBJ = dealerBJProbability(upcard, playComp)
+        const dealerMemo = createDealerMemo()
         let cellEV: number
 
         if (isNatural(rank1, rank2)) {
-          // Player natural BJ
-          // If dealer also has BJ (push), else player wins at BJ payout
+          // Player natural BJ: push if dealer also has BJ, else win at BJ payout.
           cellEV = pBJ * 0 + (1 - pBJ) * rules.blackjackPayout
         } else if (pBJ > 0) {
-          // Dealer may have BJ; player does not have natural
-          // Always condition on no BJ here — the BJ scenario is handled by the pBJ * (-1.0) term.
-          // For ENHC (no peek), the player doesn't know BJ hasn't occurred, but the house
-          // edge formula still separates the BJ and no-BJ cases correctly.
-          const dealerOutcomesNoBlackjack = dealerOutcomesNoBJ(upcard, rules, composition, dealerMemo)
+          // Dealer may have BJ; player does not have natural.
+          const dealerOutcomesNoBlackjack = dealerOutcomesNoBJ(upcard, rules, playComp, dealerMemo)
 
           const hand = playerHand(rank1, rank2)
           const hitMemo = new Map<string, number>()
@@ -80,26 +89,22 @@ export function computeHouseEdge(rules: BlackjackRules): HouseEdgeResult {
             upcard,
             dealerOutcomesNoBlackjack,
             rules,
-            composition,
+            playComp,
             dealerMemo,
             hitMemo,
           )
 
-          // With ENHC (no peek), the player acts before dealer checks for BJ.
-          // If they doubled, they lose 2 units to dealer BJ; if they split, 2 units
-          // (one per initial hand). With peek, dealer BJ is always caught first so
-          // player always loses exactly 1 unit regardless of intended action.
+          // ENHC: player acts before peek — lose 2 units on D/P if dealer has BJ.
+          // Peek: dealer BJ always caught first, player loses exactly 1 unit.
           const evGivenBJ = !rules.dealerPeek && (action === 'D' || action === 'P')
             ? -2.0
             : -1.0
 
-          // EV of playing: combine BJ and no-BJ scenarios
           const evPlay = pBJ * evGivenBJ + (1 - pBJ) * evGivenNoBJ
-          // Early surrender: player decides before peek — surrender only when better than playing
           cellEV = rules.surrender === 'early' ? Math.max(evPlay, -0.5) : evPlay
         } else {
-          // No dealer BJ possible (upcards 2-9)
-          const dealerOutcomes = dealerOutcomesFromUpcard(upcard, rules, composition, dealerMemo)
+          // No dealer BJ possible (upcards 2–9).
+          const dealerOutcomes = dealerOutcomesFromUpcard(upcard, rules, playComp, dealerMemo)
           const hand = playerHand(rank1, rank2)
           const hitMemo = new Map<string, number>()
           const { ev } = evOptimal(
@@ -110,7 +115,7 @@ export function computeHouseEdge(rules: BlackjackRules): HouseEdgeResult {
             upcard,
             dealerOutcomes,
             rules,
-            composition,
+            playComp,
             dealerMemo,
             hitMemo,
           )

@@ -38,7 +38,7 @@ export function RulesPanel() {
 
         <SectionHeading>Game Setup</SectionHeading>
 
-        <RuleRow label="Decks" description="display only — infinite-deck model">
+        <RuleRow label="Decks">
           <Select
             value={String(rules.decks)}
             onValueChange={(v) => setRules({ decks: parseInt(v) as BlackjackRules['decks'] })}

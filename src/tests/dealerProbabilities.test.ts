@@ -7,7 +7,7 @@ import {
   dealerBJProbability,
   createDealerMemo,
 } from '../core/blackjack/dealerProbabilities'
-import { INFINITE_DECK } from '../core/blackjack/constants'
+import { INFINITE_DECK, buildShoeComposition, removeCard } from '../core/blackjack/constants'
 
 const S17_RULES = { ...DEFAULT_RULES, dealerHitsSoft17: false }
 const H17_RULES = { ...DEFAULT_RULES, dealerHitsSoft17: true }
@@ -107,17 +107,26 @@ describe('dealerOutcomesNoBJ', () => {
 })
 
 describe('dealerBJProbability', () => {
-  it('upcard A: P(BJ) = 4/13', () => {
-    expect(dealerBJProbability('A')).toBeCloseTo(4 / 13, 10)
+  it('upcard A: P(BJ) = 4/13 under infinite deck', () => {
+    expect(dealerBJProbability('A', INFINITE_DECK)).toBeCloseTo(4 / 13, 10)
   })
 
-  it('upcard T: P(BJ) = 1/13', () => {
-    expect(dealerBJProbability('T')).toBeCloseTo(1 / 13, 10)
+  it('upcard T: P(BJ) = 1/13 under infinite deck', () => {
+    expect(dealerBJProbability('T', INFINITE_DECK)).toBeCloseTo(1 / 13, 10)
   })
 
   it('other upcards: P(BJ) = 0', () => {
     for (const up of ['2', '3', '4', '5', '6', '7', '8', '9'] as const) {
-      expect(dealerBJProbability(up)).toBe(0)
+      expect(dealerBJProbability(up, INFINITE_DECK)).toBe(0)
     }
+  })
+
+  it('1-deck: upcard A, player has (T,T) — fewer Ts left → P(BJ) < infinite-deck', () => {
+    const shoe = buildShoeComposition(1) // 16 Ts
+    const reduced = removeCard(removeCard(removeCard(shoe, 'T'), 'T'), 'A') // remove 2Ts + upcard A
+    // Remaining Ts: 14 out of 49 cards
+    const pBJ = dealerBJProbability('A', reduced)
+    expect(pBJ).toBeCloseTo(14 / 49, 10)
+    expect(pBJ).toBeLessThan(4 / 13) // fewer Ts means lower BJ probability
   })
 })

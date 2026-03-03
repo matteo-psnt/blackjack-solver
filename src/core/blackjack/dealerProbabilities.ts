@@ -166,13 +166,15 @@ export function dealerOutcomesNoBJ(
 }
 
 /**
- * P(dealer natural blackjack) given upcard, under infinite deck.
- * Upcard A: 4/13 (hole = T). Upcard T: 1/13 (hole = A). Other: 0.
+ * P(dealer natural blackjack) given upcard and remaining shoe composition.
+ * Upcard A: P(hole = T). Upcard T: P(hole = A). Other: 0.
+ * Defaults to INFINITE_DECK for backward compatibility.
  */
-export function dealerBJProbability(upcard: DealerUpcard): number {
-  const tw = Object.values(INFINITE_DECK).reduce((a, b) => a + b, 0) // 13
-  if (upcard === 'A') return INFINITE_DECK['T'] / tw // 4/13
-  if (upcard === 'T') return INFINITE_DECK['A'] / tw // 1/13
+export function dealerBJProbability(upcard: DealerUpcard, composition: DeckComposition = INFINITE_DECK): number {
+  const tw = Object.values(composition).reduce((a, b) => a + b, 0)
+  if (tw === 0) return 0
+  if (upcard === 'A') return composition['T'] / tw
+  if (upcard === 'T') return composition['A'] / tw
   return 0
 }
 

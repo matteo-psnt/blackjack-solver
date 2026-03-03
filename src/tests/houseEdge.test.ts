@@ -129,3 +129,41 @@ describe('resplit aces', () => {
     expect(rsa.houseEdge).toBeLessThan(noRsa.houseEdge)
   })
 })
+
+describe('finite deck computation', () => {
+  it('1-deck has lower house edge than 6-deck (fewer decks favors player)', () => {
+    const one = computeHouseEdge({ ...H17, decks: 1 })
+    const six = computeHouseEdge({ ...H17, decks: 6 })
+    expect(one.houseEdge).toBeLessThan(six.houseEdge)
+  })
+
+  it('1-deck vs 6-deck house edge difference is in realistic range (0.1%–0.6%)', () => {
+    const one = computeHouseEdge({ ...H17, decks: 1 })
+    const six = computeHouseEdge({ ...H17, decks: 6 })
+    const diff = six.houseEdge - one.houseEdge
+    expect(diff).toBeGreaterThan(0.001)
+    expect(diff).toBeLessThan(0.006)
+  })
+
+  it('2-deck is between 1-deck and 6-deck', () => {
+    const one = computeHouseEdge({ ...H17, decks: 1 })
+    const two = computeHouseEdge({ ...H17, decks: 2 })
+    const six = computeHouseEdge({ ...H17, decks: 6 })
+    expect(two.houseEdge).toBeGreaterThan(one.houseEdge)
+    expect(two.houseEdge).toBeLessThan(six.houseEdge)
+  })
+
+  it('8-deck house edge is close to 6-deck (< 0.05% difference)', () => {
+    const six = computeHouseEdge({ ...H17, decks: 6 })
+    const eight = computeHouseEdge({ ...H17, decks: 8 })
+    expect(Math.abs(eight.houseEdge - six.houseEdge)).toBeLessThan(0.0005)
+  })
+
+  it('house edge is within plausible bounds for all deck counts', () => {
+    for (const decks of [1, 2, 4, 6, 8] as const) {
+      const result = computeHouseEdge({ ...H17, decks })
+      expect(result.houseEdge).toBeGreaterThan(0)
+      expect(result.houseEdge).toBeLessThan(0.10)
+    }
+  })
+})

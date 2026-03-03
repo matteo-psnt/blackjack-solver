@@ -191,3 +191,34 @@ describe('rule variations affect strategy', () => {
     expect(t4.pairs['pairA']['6'].action).toBe('P')
   })
 })
+
+describe('finite deck strategy', () => {
+  it('1-deck strategy table computes without error and returns valid actions', () => {
+    const table = computeStrategyTable({ ...DEFAULT_RULES, decks: 1 })
+    const validActions = new Set(['H', 'S', 'D', 'P', 'R'])
+    for (const section of [table.hard, table.soft, table.pairs]) {
+      for (const row of Object.values(section)) {
+        for (const cell of Object.values(row)) {
+          expect(validActions.has(cell.action)).toBe(true)
+        }
+      }
+    }
+  })
+
+  it('1-deck: pair of aces always split', () => {
+    const table = computeStrategyTable({ ...DEFAULT_RULES, decks: 1 })
+    for (const upcard of ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'A'] as const) {
+      expect(table.pairs['pairA'][upcard].action).toBe('P')
+    }
+  })
+
+  it('strategy table is consistent across all supported deck counts', () => {
+    for (const decks of [1, 2, 4, 6, 8] as const) {
+      const table = computeStrategyTable({ ...DEFAULT_RULES, decks })
+      // Hard 17 should never hit regardless of deck count
+      for (const upcard of ['2', '3', '4', '5', '6', '7', '8', '9', 'T'] as const) {
+        expect(table.hard['hard17'][upcard].action).toBe('S')
+      }
+    }
+  })
+})

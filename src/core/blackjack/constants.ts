@@ -28,6 +28,30 @@ export const INFINITE_DECK: DeckComposition = {
 
 export const TOTAL_WEIGHT = 13
 
+/**
+ * Build a finite shoe composition for the given number of decks.
+ * Each rank A–9 has 4*decks cards; T-value (10/J/Q/K) has 16*decks cards.
+ */
+export function buildShoeComposition(decks: number): DeckComposition {
+  return {
+    A: 4 * decks,
+    '2': 4 * decks,
+    '3': 4 * decks,
+    '4': 4 * decks,
+    '5': 4 * decks,
+    '6': 4 * decks,
+    '7': 4 * decks,
+    '8': 4 * decks,
+    '9': 4 * decks,
+    T: 16 * decks,
+  }
+}
+
+/** Return a new composition with one card of `rank` removed (floor at 0). */
+export function removeCard(comp: DeckComposition, rank: Rank): DeckComposition {
+  return { ...comp, [rank]: Math.max(0, comp[rank] - 1) }
+}
+
 /** Numeric card value for addition (ace = 11; handled specially in addCard). */
 export function cardNumericValue(rank: Rank): number {
   if (rank === 'A') return 11
