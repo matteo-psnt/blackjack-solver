@@ -74,14 +74,15 @@ export const ALL_DEALER_UPCARDS: DealerUpcard[] = [
   'A',
 ]
 
+// Common U.S. Shoe: 6-deck, S17, no DAS, no surrender, 3:2, dealer peek
 export const DEFAULT_RULES: BlackjackRules = {
   decks: 6,
-  dealerHitsSoft17: true,
+  dealerHitsSoft17: false,
   dealerPeek: true,
   blackjackPayout: 1.5,
-  doubleAfterSplit: true,
+  doubleAfterSplit: false,
   doubleRestriction: 'any',
-  surrender: 'late',
+  surrender: 'none',
   resplitAces: false,
   hitSplitAces: false,
   blackjackAfterSplit: false,

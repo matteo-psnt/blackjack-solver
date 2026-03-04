@@ -17,7 +17,7 @@ import type { DealerUpcard } from '../core/blackjack/types'
 const UPCARDS: DealerUpcard[] = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'A']
 
 // ---------------------------------------------------------------------------
-// Strategy table snapshot (DEFAULT_RULES: 6-deck H17 DAS late-surr 3:2)
+// Strategy table snapshot (DEFAULT_RULES: 6-deck S17 no-DAS no-surr 3:2)
 // ---------------------------------------------------------------------------
 
 describe('strategy table snapshot — DEFAULT_RULES', () => {
@@ -43,6 +43,8 @@ describe('strategy table snapshot — DEFAULT_RULES', () => {
 
 // ---------------------------------------------------------------------------
 // House edge anchors — locked to 4 decimal places
+// Each test specifies all relevant rules explicitly so anchors don't shift
+// when DEFAULT_RULES changes.
 // ---------------------------------------------------------------------------
 
 describe('house edge anchors', () => {
@@ -50,31 +52,33 @@ describe('house edge anchors', () => {
     return parseFloat((computeHouseEdge(rules).houseEdge * 100).toFixed(4))
   }
 
-  it('DEFAULT_RULES (6-deck H17 DAS late-surr 3:2)', () => {
-    expect(he(DEFAULT_RULES)).toMatchSnapshot()
+  const BASE = DEFAULT_RULES  // 6-deck S17 no-DAS no-surr 3:2 dealer-peek
+
+  it('DEFAULT_RULES (6-deck S17 no-DAS no-surr 3:2)', () => {
+    expect(he(BASE)).toMatchSnapshot()
   })
 
-  it('6-deck H17 DAS no-surr 3:2', () => {
-    expect(he({ ...DEFAULT_RULES, surrender: 'none' })).toMatchSnapshot()
+  it('6-deck H17 DAS late-surr 3:2', () => {
+    expect(he({ ...BASE, dealerHitsSoft17: true, doubleAfterSplit: true, surrender: 'late' })).toMatchSnapshot()
   })
 
-  it('6-deck S17 DAS no-surr 3:2', () => {
-    expect(he({ ...DEFAULT_RULES, surrender: 'none', dealerHitsSoft17: false })).toMatchSnapshot()
+  it('6-deck S17 DAS late-surr 3:2', () => {
+    expect(he({ ...BASE, doubleAfterSplit: true, surrender: 'late' })).toMatchSnapshot()
   })
 
-  it('1-deck H17 DAS no-surr 3:2', () => {
-    expect(he({ ...DEFAULT_RULES, decks: 1, surrender: 'none' })).toMatchSnapshot()
+  it('1-deck S17 no-DAS no-surr 3:2', () => {
+    expect(he({ ...BASE, decks: 1 })).toMatchSnapshot()
   })
 
-  it('6-deck H17 DAS no-surr 6:5', () => {
-    expect(he({ ...DEFAULT_RULES, surrender: 'none', blackjackPayout: 1.2 })).toMatchSnapshot()
+  it('6-deck S17 no-DAS no-surr 6:5', () => {
+    expect(he({ ...BASE, blackjackPayout: 1.2 })).toMatchSnapshot()
   })
 
   it('6-deck H17 no-DAS no-surr 3:2', () => {
-    expect(he({ ...DEFAULT_RULES, surrender: 'none', doubleAfterSplit: false })).toMatchSnapshot()
+    expect(he({ ...BASE, dealerHitsSoft17: true })).toMatchSnapshot()
   })
 
-  it('6-deck H17 DAS early-surr 3:2', () => {
-    expect(he({ ...DEFAULT_RULES, surrender: 'early' })).toMatchSnapshot()
+  it('6-deck S17 DAS early-surr 3:2', () => {
+    expect(he({ ...BASE, doubleAfterSplit: true, surrender: 'early' })).toMatchSnapshot()
   })
 })

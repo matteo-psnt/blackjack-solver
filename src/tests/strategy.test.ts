@@ -19,16 +19,16 @@ describe('computeStrategyTable', () => {
     }
   })
 
-  it('hard17 vs A (H17): action = R (surrender is correct per basic strategy)', () => {
-    // With H17 rules, evStand(17) vs A (no BJ) ≈ -0.61 < -0.5 → surrender
+  it('hard17 vs A (S17, no surrender): action = S', () => {
+    // With S17 rules and no surrender, stand is optimal vs A
     const row = table.hard['hard17']
-    expect(row['A'].action).toBe('R')
+    expect(row['A'].action).toBe('S')
   })
 
-  it('hard16 vs T: action = R (late surrender available)', () => {
-    // Default rules have late surrender
+  it('hard16 vs T (no surrender): action = H', () => {
+    // No surrender available, so hit is optimal
     const cell = table.hard['hard16']['T']
-    expect(cell.action).toBe('R')
+    expect(cell.action).toBe('H')
   })
 
   it('pair of aces vs any upcard: action = P', () => {

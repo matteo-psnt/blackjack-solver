@@ -3,7 +3,7 @@ import { DEFAULT_RULES, INFINITE_DECK } from '../core/blackjack/constants'
 import { createDealerMemo, dealerOutcomesFromUpcard, dealerOutcomesNoBJ } from '../core/blackjack/dealerProbabilities'
 import { evStand, evDouble, evOptimal, canDoubleHand } from '../core/blackjack/ev'
 
-const H17 = { ...DEFAULT_RULES, dealerHitsSoft17: true }
+const H17 = { ...DEFAULT_RULES, dealerHitsSoft17: true, surrender: 'late' as const }
 
 function getOutcomes(upcard: string, rules = H17, noBlackjack = false) {
   const memo = createDealerMemo()

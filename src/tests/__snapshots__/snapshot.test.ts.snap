@@ -1,30 +1,30 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`house edge anchors > 1-deck H17 DAS no-surr 3:2 1`] = `0.0492`;
+exports[`house edge anchors > 1-deck S17 no-DAS no-surr 3:2 1`] = `-0.046`;
 
-exports[`house edge anchors > 6-deck H17 DAS early-surr 3:2 1`] = `-0.082`;
-
-exports[`house edge anchors > 6-deck H17 DAS no-surr 3:2 1`] = `0.6255`;
-
-exports[`house edge anchors > 6-deck H17 DAS no-surr 6:5 1`] = `1.9852`;
+exports[`house edge anchors > 6-deck H17 DAS late-surr 3:2 1`] = `0.5378`;
 
 exports[`house edge anchors > 6-deck H17 no-DAS no-surr 3:2 1`] = `0.7593`;
 
-exports[`house edge anchors > 6-deck S17 DAS no-surr 3:2 1`] = `0.4077`;
+exports[`house edge anchors > 6-deck S17 DAS early-surr 3:2 1`] = `-0.2126`;
 
-exports[`house edge anchors > DEFAULT_RULES (6-deck H17 DAS late-surr 3:2) 1`] = `0.5378`;
+exports[`house edge anchors > 6-deck S17 DAS late-surr 3:2 1`] = `0.3357`;
+
+exports[`house edge anchors > 6-deck S17 no-DAS no-surr 6:5 1`] = `1.8991`;
+
+exports[`house edge anchors > DEFAULT_RULES (6-deck S17 no-DAS no-surr 3:2) 1`] = `0.5394`;
 
 exports[`strategy table snapshot — DEFAULT_RULES > full strategy table matches snapshot 1`] = `
 {
   "hard": {
     "hard10": "2:D 3:D 4:D 5:D 6:D 7:D 8:D 9:D T:H A:H",
-    "hard11": "2:D 3:D 4:D 5:D 6:D 7:D 8:D 9:D T:D A:D",
+    "hard11": "2:D 3:D 4:D 5:D 6:D 7:D 8:D 9:D T:D A:H",
     "hard12": "2:H 3:H 4:S 5:S 6:S 7:H 8:H 9:H T:H A:H",
     "hard13": "2:S 3:S 4:S 5:S 6:S 7:H 8:H 9:H T:H A:H",
     "hard14": "2:S 3:S 4:S 5:S 6:S 7:H 8:H 9:H T:H A:H",
-    "hard15": "2:S 3:S 4:S 5:S 6:S 7:H 8:H 9:H T:R A:R",
-    "hard16": "2:S 3:S 4:S 5:S 6:S 7:H 8:H 9:R T:R A:R",
-    "hard17": "2:S 3:S 4:S 5:S 6:S 7:S 8:S 9:S T:S A:R",
+    "hard15": "2:S 3:S 4:S 5:S 6:S 7:H 8:H 9:H T:H A:H",
+    "hard16": "2:S 3:S 4:S 5:S 6:S 7:H 8:H 9:H T:H A:H",
+    "hard17": "2:S 3:S 4:S 5:S 6:S 7:S 8:S 9:S T:S A:S",
     "hard5": "2:H 3:H 4:H 5:H 6:H 7:H 8:H 9:H T:H A:H",
     "hard6": "2:H 3:H 4:H 5:H 6:H 7:H 8:H 9:H T:H A:H",
     "hard7": "2:H 3:H 4:H 5:H 6:H 7:H 8:H 9:H T:H A:H",
@@ -32,12 +32,12 @@ exports[`strategy table snapshot — DEFAULT_RULES > full strategy table matches
     "hard9": "2:H 3:D 4:D 5:D 6:D 7:H 8:H 9:H T:H A:H",
   },
   "pairs": {
-    "pair2": "2:P 3:P 4:P 5:P 6:P 7:P 8:H 9:H T:H A:H",
-    "pair3": "2:P 3:P 4:P 5:P 6:P 7:P 8:P 9:H T:H A:H",
-    "pair4": "2:H 3:H 4:H 5:P 6:P 7:H 8:H 9:H T:H A:H",
+    "pair2": "2:H 3:H 4:P 5:P 6:P 7:P 8:H 9:H T:H A:H",
+    "pair3": "2:H 3:H 4:P 5:P 6:P 7:P 8:H 9:H T:H A:H",
+    "pair4": "2:H 3:H 4:H 5:H 6:H 7:H 8:H 9:H T:H A:H",
     "pair5": "2:D 3:D 4:D 5:D 6:D 7:D 8:D 9:D T:H A:H",
     "pair6": "2:P 3:P 4:P 5:P 6:P 7:H 8:H 9:H T:H A:H",
-    "pair7": "2:P 3:P 4:P 5:P 6:P 7:P 8:P 9:H T:H A:H",
+    "pair7": "2:P 3:P 4:P 5:P 6:P 7:P 8:H 9:H T:H A:H",
     "pair8": "2:P 3:P 4:P 5:P 6:P 7:P 8:P 9:P T:P A:P",
     "pair9": "2:P 3:P 4:P 5:P 6:P 7:S 8:P 9:P T:S A:S",
     "pairA": "2:P 3:P 4:P 5:P 6:P 7:P 8:P 9:P T:P A:P",
@@ -49,8 +49,8 @@ exports[`strategy table snapshot — DEFAULT_RULES > full strategy table matches
     "soft15": "2:H 3:H 4:D 5:D 6:D 7:H 8:H 9:H T:H A:H",
     "soft16": "2:H 3:H 4:D 5:D 6:D 7:H 8:H 9:H T:H A:H",
     "soft17": "2:H 3:D 4:D 5:D 6:D 7:H 8:H 9:H T:H A:H",
-    "soft18": "2:D 3:D 4:D 5:D 6:D 7:S 8:S 9:H T:H A:H",
-    "soft19": "2:S 3:S 4:S 5:S 6:D 7:S 8:S 9:S T:S A:S",
+    "soft18": "2:S 3:D 4:D 5:D 6:D 7:S 8:S 9:H T:H A:H",
+    "soft19": "2:S 3:S 4:S 5:S 6:S 7:S 8:S 9:S T:S A:S",
     "soft20": "2:S 3:S 4:S 5:S 6:S 7:S 8:S 9:S T:S A:S",
   },
 }
