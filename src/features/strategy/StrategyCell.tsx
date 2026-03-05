@@ -65,6 +65,7 @@ export function StrategyCell({ action, breakdown, handLabel, upcardLabel, evOver
   useEffect(() => {
     if (prevActionRef.current !== action) {
       prevActionRef.current = action
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFlashCount(c => c + 1)
     }
   }, [action])

@@ -12,7 +12,7 @@ import { describe, it, expect } from 'vitest'
 import { DEFAULT_RULES } from '../core/blackjack/constants'
 import { computeStrategyTable } from '../core/blackjack/strategy'
 import { computeHouseEdge } from '../core/blackjack/houseEdge'
-import type { DealerUpcard } from '../core/blackjack/types'
+import type { DealerUpcard, StrategyRow } from '../core/blackjack/types'
 
 const UPCARDS: DealerUpcard[] = ['2', '3', '4', '5', '6', '7', '8', '9', 'T', 'A']
 
@@ -30,7 +30,7 @@ describe('strategy table snapshot — DEFAULT_RULES', () => {
     for (const [section, rows] of Object.entries(t)) {
       grid[section] = {}
       for (const [handKey, row] of Object.entries(rows)) {
-        grid[section][handKey] = UPCARDS.map(u => `${u}:${(row as any)[u].action}`).join(' ')
+        grid[section][handKey] = UPCARDS.map(u => `${u}:${(row as StrategyRow)[u].action}`).join(' ')
       }
     }
     return grid
