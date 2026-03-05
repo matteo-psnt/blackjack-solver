@@ -1,54 +1,85 @@
-import { Button } from '../../components/ui/button'
-import { Separator } from '../../components/ui/separator'
-import { Switch } from '../../components/ui/switch'
+import { Separator } from "../../components/ui/separator"
+import { Switch } from "../../components/ui/switch"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '../../components/ui/select'
-import { useRulesStore } from '../../store/rulesStore'
-import { RuleRow } from './RuleRow'
-import type { BlackjackRules } from '../../core/blackjack/types'
+} from "../../components/ui/select"
+import {
+  getRulesPreset,
+  resolveRulesPresetId,
+  RULE_PRESETS,
+  type RulesPresetId,
+} from "../../core/blackjack/rulePresets"
+import { useRulesStore } from "../../store/rulesStore"
+import { RuleRow } from "./RuleRow"
+import type { BlackjackRules } from "../../core/blackjack/types"
 
 function SectionHeading({ children }: { children: string }) {
   return (
-    <p className="text-[9px] font-medium uppercase tracking-[0.2em] text-muted-foreground/50 mt-5 mb-1 first:mt-2">
+    <p className="mt-5 mb-1 text-[9px] font-medium tracking-[0.2em] text-muted-foreground/50 uppercase first:mt-2">
       {children}
     </p>
   )
 }
 
 export function RulesPanel() {
-  const { rules, setRules, resetRules } = useRulesStore()
+  const { rules, setRules } = useRulesStore()
+  const activePresetId = resolveRulesPresetId(rules)
+
+  function handlePresetChange(value: string) {
+    const preset = getRulesPreset(value as RulesPresetId)
+    if (!preset) return
+    setRules(preset.rules)
+  }
 
   return (
-    <aside className="w-[260px] shrink-0 border-r border-border flex flex-col h-full">
-      {/* Wordmark */}
-      <div className="px-6 pt-6 pb-5 border-b border-border">
-        <h1 className="font-serif text-xl tracking-wide text-foreground leading-none">
+    <aside className="flex h-full w-[260px] shrink-0 flex-col border-r border-border">
+      {/* Wordmark + Preset */}
+      <div className="border-b border-border px-6 pt-6 pb-5">
+        <h1 className="font-serif text-xl leading-none tracking-wide text-foreground">
           The Counting Room
         </h1>
-        <p className="text-[11px] text-muted-foreground/60 mt-1.5">Basic Blackjack Strategy Analyzer</p>
+        <p className="mt-1.5 text-[11px] text-muted-foreground/60">
+          Basic Blackjack Strategy Analyzer
+        </p>
+        <div className="mt-4">
+          <Select value={activePresetId === 'custom' ? undefined : activePresetId} onValueChange={handlePresetChange}>
+            <SelectTrigger className="h-8 w-full text-xs">
+              <SelectValue placeholder="Custom" />
+            </SelectTrigger>
+            <SelectContent>
+              {RULE_PRESETS.map((preset) => (
+                <SelectItem key={preset.id} value={preset.id}>
+                  {preset.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* Controls */}
       <div className="flex-1 overflow-y-auto px-6 py-2">
-
         <SectionHeading>Game Setup</SectionHeading>
 
         <RuleRow label="Decks">
           <Select
             value={String(rules.decks)}
-            onValueChange={(v) => setRules({ decks: parseInt(v) as BlackjackRules['decks'] })}
+            onValueChange={(v) =>
+              setRules({ decks: parseInt(v) as BlackjackRules["decks"] })
+            }
           >
-            <SelectTrigger className="w-[72px] h-7 text-xs">
+            <SelectTrigger className="h-7 w-[72px] text-xs">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               {([1, 2, 4, 6, 8] as const).map((d) => (
-                <SelectItem key={d} value={String(d)}>{d}</SelectItem>
+                <SelectItem key={d} value={String(d)}>
+                  {d}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
@@ -58,10 +89,14 @@ export function RulesPanel() {
           <Select
             value={String(rules.blackjackPayout)}
             onValueChange={(v) =>
-              setRules({ blackjackPayout: parseFloat(v) as BlackjackRules['blackjackPayout'] })
+              setRules({
+                blackjackPayout: parseFloat(
+                  v
+                ) as BlackjackRules["blackjackPayout"],
+              })
             }
           >
-            <SelectTrigger className="w-[72px] h-7 text-xs">
+            <SelectTrigger className="h-7 w-[72px] text-xs">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -81,7 +116,10 @@ export function RulesPanel() {
           />
         </RuleRow>
 
-        <RuleRow label="Dealer Peek" description={rules.dealerPeek ? 'US rules' : 'ENHC — no hole card'}>
+        <RuleRow
+          label="Dealer Peek"
+          description={rules.dealerPeek ? "US rules" : "ENHC — no hole card"}
+        >
           <Switch
             checked={rules.dealerPeek}
             onCheckedChange={(v) => setRules({ dealerPeek: v })}
@@ -102,10 +140,12 @@ export function RulesPanel() {
           <Select
             value={rules.doubleRestriction}
             onValueChange={(v) =>
-              setRules({ doubleRestriction: v as BlackjackRules['doubleRestriction'] })
+              setRules({
+                doubleRestriction: v as BlackjackRules["doubleRestriction"],
+              })
             }
           >
-            <SelectTrigger className="w-[72px] h-7 text-xs">
+            <SelectTrigger className="h-7 w-[72px] text-xs">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -119,9 +159,11 @@ export function RulesPanel() {
         <RuleRow label="Surrender">
           <Select
             value={rules.surrender}
-            onValueChange={(v) => setRules({ surrender: v as BlackjackRules['surrender'] })}
+            onValueChange={(v) =>
+              setRules({ surrender: v as BlackjackRules["surrender"] })
+            }
           >
-            <SelectTrigger className="w-[72px] h-7 text-xs">
+            <SelectTrigger className="h-7 w-[72px] text-xs">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -145,32 +187,26 @@ export function RulesPanel() {
         <RuleRow label="Max Splits">
           <Select
             value={String(rules.maxSplits)}
-            onValueChange={(v) => setRules({ maxSplits: parseInt(v) as BlackjackRules['maxSplits'] })}
+            onValueChange={(v) =>
+              setRules({
+                maxSplits: parseInt(v) as BlackjackRules["maxSplits"],
+              })
+            }
           >
-            <SelectTrigger className="w-[72px] h-7 text-xs">
+            <SelectTrigger className="h-7 w-[72px] text-xs">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               {([2, 3, 4] as const).map((n) => (
-                <SelectItem key={n} value={String(n)}>{n} hands</SelectItem>
+                <SelectItem key={n} value={String(n)}>
+                  {n} hands
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
         </RuleRow>
-
       </div>
 
-      {/* Footer */}
-      <div className="px-6 py-4 border-t border-border">
-        <Button
-          variant="ghost"
-          size="sm"
-          className="w-full text-xs text-muted-foreground hover:text-foreground"
-          onClick={resetRules}
-        >
-          Reset to Defaults
-        </Button>
-      </div>
     </aside>
   )
 }
