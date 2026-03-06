@@ -118,13 +118,21 @@
     --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-/* Action color palette — balanced luminance, readable against dark bg */
+/* Action color palette */
 :root {
   --action-h: oklch(0.50 0.15 148);  /* Hit: green */
   --action-s: oklch(0.54 0.18 22);   /* Stand: red */
   --action-d: oklch(0.56 0.17 72);   /* Double: amber-orange */
   --action-p: oklch(0.50 0.16 248);  /* Split: blue */
   --action-r: oklch(0.48 0.10 320);  /* Surrender: mauve */
+}
+
+.dark {
+  --action-h: oklch(0.38 0.13 148);
+  --action-s: oklch(0.42 0.16 22);
+  --action-d: oklch(0.44 0.15 72);
+  --action-p: oklch(0.38 0.13 248);
+  --action-r: oklch(0.36 0.09 320);
 }
 
 @keyframes edge-flash {
