@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { DEFAULT_RULES } from '../core/blackjack/constants'
+import { DEFAULT_RULES, buildShoeComposition } from '../core/blackjack/constants'
 import { computeHouseEdge } from '../core/blackjack/houseEdge'
 
 const H17 = { ...DEFAULT_RULES, dealerHitsSoft17: true }
@@ -127,6 +127,14 @@ describe('resplit aces', () => {
     const rsa = computeHouseEdge({ ...H17, resplitAces: true })
     const noRsa = computeHouseEdge({ ...H17, resplitAces: false })
     expect(rsa.houseEdge).toBeLessThan(noRsa.houseEdge)
+  })
+})
+
+describe('custom composition house edge', () => {
+  it('passing buildShoeComposition(decks) produces same house edge as default', () => {
+    const defaultResult = computeHouseEdge(DEFAULT_RULES)
+    const explicitResult = computeHouseEdge(DEFAULT_RULES, buildShoeComposition(DEFAULT_RULES.decks))
+    expect(explicitResult.houseEdge).toBeCloseTo(defaultResult.houseEdge, 8)
   })
 })
 

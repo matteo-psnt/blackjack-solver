@@ -1,4 +1,4 @@
-import type { BlackjackRules, DealerUpcard, HouseEdgeResult, Rank } from './types'
+import type { BlackjackRules, DeckComposition, DealerUpcard, HouseEdgeResult, Rank } from './types'
 import { ALL_RANKS, buildShoeComposition, removeCard } from './constants'
 import {
   addCard,
@@ -42,8 +42,11 @@ function playerHand(
  * - Early vs late surrender
  * - Dealer peek / ENHC conditioning
  */
-export function computeHouseEdge(rules: BlackjackRules): HouseEdgeResult {
-  const baseComposition = buildShoeComposition(rules.decks)
+export function computeHouseEdge(
+  rules: BlackjackRules,
+  startingComposition?: DeckComposition,
+): HouseEdgeResult {
+  const baseComposition = startingComposition ?? buildShoeComposition(rules.decks)
   const tw = Object.values(baseComposition).reduce((a, b) => a + b, 0) // 52 * decks
 
   let totalEV = 0

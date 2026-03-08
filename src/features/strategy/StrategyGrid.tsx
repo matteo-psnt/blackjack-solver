@@ -1,5 +1,6 @@
-import { useState } from 'react'
-import type { StrategyTable } from '../../core/blackjack/types'
+import { useMemo, useState } from 'react'
+import type { BlackjackRules, DeckComposition, StrategyTable } from '../../core/blackjack/types'
+import { useStrategyTable } from '../../hooks/useStrategyTable'
 import { StrategyTable as StrategyTableComponent } from './StrategyTable'
 import { ActionLegend } from './ActionLegend'
 
@@ -45,6 +46,10 @@ const PAIR_LABELS: Record<string, string> = {
 
 interface StrategyGridProps {
   table: StrategyTable
+  rules: BlackjackRules
+  tc: number
+  setTc: (tc: number) => void
+  countComposition: DeckComposition | undefined
 }
 
 function SectionLabel({ children }: { children: string }) {
@@ -57,26 +62,51 @@ function SectionLabel({ children }: { children: string }) {
   )
 }
 
-export function StrategyGrid({ table }: StrategyGridProps) {
+export function StrategyGrid({ table, rules, tc, setTc, countComposition }: StrategyGridProps) {
   const [evOverlay, setEvOverlay] = useState(false)
 
-  const hardRows = Object.entries(table.hard).map(([key, row]) => ({
-    key: key as keyof typeof table.hard,
+  const countTable = useStrategyTable(rules, countComposition)
+
+  const displayTable = tc !== 0 ? countTable : table
+
+  const deviationSet = useMemo<Set<string>>(() => {
+    if (tc === 0) return new Set()
+    const s = new Set<string>()
+    for (const section of ['hard', 'soft', 'pairs'] as const) {
+      for (const [handKey, row] of Object.entries(countTable[section])) {
+        for (const [up, cell] of Object.entries(row as Record<string, { action: string }>)) {
+          const basic = (table[section] as Record<string, Record<string, { action: string }>>)[handKey]?.[up]
+          if (basic && cell.action !== basic.action) s.add(`${handKey}|${up}`)
+        }
+      }
+    }
+    return s
+  }, [tc, table, countTable])
+
+  const hardRows = Object.entries(displayTable.hard).map(([key, row]) => ({
+    key: key as keyof typeof displayTable.hard,
     label: HARD_LABELS[key] ?? key,
     row,
   }))
 
-  const softRows = Object.entries(table.soft).map(([key, row]) => ({
-    key: key as keyof typeof table.soft,
+  const softRows = Object.entries(displayTable.soft).map(([key, row]) => ({
+    key: key as keyof typeof displayTable.soft,
     label: SOFT_LABELS[key] ?? key,
     row,
   }))
 
-  const pairRows = Object.entries(table.pairs).map(([key, row]) => ({
-    key: key as keyof typeof table.pairs,
+  const pairRows = Object.entries(displayTable.pairs).map(([key, row]) => ({
+    key: key as keyof typeof displayTable.pairs,
     label: PAIR_LABELS[key] ?? key,
     row,
   }))
+
+  const btnClass = (active: boolean) =>
+    `text-[10px] font-mono tracking-wide px-2 py-1 rounded border transition-colors ${
+      active
+        ? 'border-muted-foreground/50 text-foreground bg-muted/40'
+        : 'border-muted-foreground/20 text-muted-foreground hover:text-foreground hover:border-muted-foreground/40'
+    }`
 
   return (
     <div className="flex flex-col gap-3 px-6 py-4">
@@ -92,32 +122,37 @@ export function StrategyGrid({ table }: StrategyGridProps) {
               <span>win</span>
             </div>
           )}
-          <button
-            onClick={() => setEvOverlay(v => !v)}
-            className={`text-[10px] font-mono tracking-wide px-2 py-1 rounded border transition-colors ${
-              evOverlay
-                ? 'border-muted-foreground/50 text-foreground bg-muted/40'
-                : 'border-muted-foreground/20 text-muted-foreground hover:text-foreground hover:border-muted-foreground/40'
-            }`}
-          >
+          <button onClick={() => setEvOverlay(v => !v)} className={btnClass(evOverlay)}>
             EV heatmap
           </button>
+          <div className={`flex items-center gap-1 border rounded px-2 py-1 ${tc !== 0 ? 'border-muted-foreground/50' : 'border-muted-foreground/20'}`}>
+            <span className="text-[10px] font-mono text-muted-foreground">TC</span>
+            <input
+              type="number"
+              value={tc}
+              onChange={e => setTc(Number(e.target.value))}
+              min={-10}
+              max={15}
+              step={1}
+              className="w-10 bg-transparent text-[10px] font-mono text-center text-foreground outline-none [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+            />
+          </div>
         </div>
       </div>
 
       <section>
         <SectionLabel>Hard</SectionLabel>
-        <StrategyTableComponent rows={hardRows} evOverlay={evOverlay} />
+        <StrategyTableComponent rows={hardRows} evOverlay={evOverlay} deviationSet={deviationSet} />
       </section>
 
       <section>
         <SectionLabel>Soft</SectionLabel>
-        <StrategyTableComponent rows={softRows} evOverlay={evOverlay} />
+        <StrategyTableComponent rows={softRows} evOverlay={evOverlay} deviationSet={deviationSet} />
       </section>
 
       <section>
         <SectionLabel>Pairs</SectionLabel>
-        <StrategyTableComponent rows={pairRows} evOverlay={evOverlay} />
+        <StrategyTableComponent rows={pairRows} evOverlay={evOverlay} deviationSet={deviationSet} />
       </section>
     </div>
   )

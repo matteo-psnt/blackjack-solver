@@ -6,9 +6,10 @@ const DEALER_UPCARDS: DealerUpcard[] = ['2', '3', '4', '5', '6', '7', '8', '9', 
 interface StrategyTableProps {
   rows: { key: HandKey; label: string; row: StrategyRow }[]
   evOverlay: boolean
+  deviationSet: Set<string>
 }
 
-export function StrategyTable({ rows, evOverlay }: StrategyTableProps) {
+export function StrategyTable({ rows, evOverlay, deviationSet }: StrategyTableProps) {
   return (
     <div className="overflow-x-auto">
       <table className="border-collapse w-auto">
@@ -50,6 +51,7 @@ export function StrategyTable({ rows, evOverlay }: StrategyTableProps) {
                   handLabel={label}
                   upcardLabel={up}
                   evOverlay={evOverlay}
+                  isDeviation={deviationSet.has(`${key}|${up}`)}
                 />
               ))}
             </tr>

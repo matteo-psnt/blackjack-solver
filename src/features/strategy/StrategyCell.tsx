@@ -12,6 +12,7 @@ interface StrategyCellProps {
   handLabel: string
   upcardLabel: string
   evOverlay: boolean
+  isDeviation?: boolean
 }
 
 const ACTION_STYLES: Record<DisplayAction, string> = {
@@ -52,7 +53,7 @@ function evHeatmapBg(ev: number): string {
   return `oklch(${l.toFixed(3)} ${c.toFixed(3)} ${h})`
 }
 
-export function StrategyCell({ action, breakdown, handLabel, upcardLabel, evOverlay }: StrategyCellProps) {
+export function StrategyCell({ action, breakdown, handLabel, upcardLabel, evOverlay, isDeviation }: StrategyCellProps) {
   const entries = (
     Object.entries(breakdown) as [DisplayAction, number | null][]
   )
@@ -76,7 +77,7 @@ export function StrategyCell({ action, breakdown, handLabel, upcardLabel, evOver
     <Tooltip>
       <TooltipTrigger asChild>
         <td
-          className={`strategy-cell relative overflow-hidden text-center font-mono font-bold text-[11px] text-white tracking-wide select-none px-0 py-[5px] w-9 cursor-default transition-colors duration-300 ${evOverlay ? '' : ACTION_STYLES[action]}`}
+          className={`strategy-cell relative overflow-hidden text-center font-mono font-bold text-[11px] text-white tracking-wide select-none px-0 py-[5px] w-9 cursor-default transition-colors duration-300 ${evOverlay ? '' : ACTION_STYLES[action]} ${isDeviation && !evOverlay ? 'ring-2 ring-inset ring-white/50' : ''}`}
           style={evOverlay ? { backgroundColor: evHeatmapBg(optimalEv) } : undefined}
         >
           {action}

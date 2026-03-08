@@ -68,9 +68,10 @@ export function RulesPanel() {
         <RuleRow label="Decks">
           <Select
             value={String(rules.decks)}
-            onValueChange={(v) =>
-              setRules({ decks: parseInt(v) as BlackjackRules["decks"] })
-            }
+            onValueChange={(v) => {
+              const d = parseInt(v) as BlackjackRules["decks"]
+              setRules({ decks: d })
+            }}
           >
             <SelectTrigger className="h-7 w-[72px] text-xs">
               <SelectValue />
@@ -205,6 +206,7 @@ export function RulesPanel() {
             </SelectContent>
           </Select>
         </RuleRow>
+
       </div>
 
     </aside>

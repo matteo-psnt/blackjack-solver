@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest"
-import { DEFAULT_RULES } from "../core/blackjack/constants"
+import { DEFAULT_RULES, buildShoeComposition } from "../core/blackjack/constants"
 import { computeStrategyTable } from "../core/blackjack/strategy"
 
 describe("computeStrategyTable", () => {
@@ -373,6 +373,22 @@ describe("rule variations affect strategy", () => {
     // Both should always split A-A
     expect(t2.pairs["pairA"]["6"].action).toBe("P")
     expect(t4.pairs["pairA"]["6"].action).toBe("P")
+  })
+})
+
+describe("custom composition strategy", () => {
+  it("passing buildShoeComposition(decks) produces same actions as default", () => {
+    const defaultTable = computeStrategyTable(DEFAULT_RULES)
+    const explicitTable = computeStrategyTable(DEFAULT_RULES, buildShoeComposition(DEFAULT_RULES.decks))
+    for (const section of ["hard", "soft", "pairs"] as const) {
+      for (const key of Object.keys(defaultTable[section])) {
+        for (const upcard of ["2", "3", "4", "5", "6", "7", "8", "9", "T", "A"] as const) {
+          const d = (defaultTable[section] as Record<string, Record<string, { action: string }>>)[key][upcard]
+          const e = (explicitTable[section] as Record<string, Record<string, { action: string }>>)[key][upcard]
+          expect(e.action).toBe(d.action)
+        }
+      }
+    }
   })
 })
 

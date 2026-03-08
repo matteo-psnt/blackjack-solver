@@ -1,10 +1,14 @@
 import { useMemo } from 'react'
-import type { BlackjackRules } from '../core/blackjack/types'
+import type { BlackjackRules, DeckComposition } from '../core/blackjack/types'
+import { ALL_RANKS } from '../core/blackjack/constants'
 import { computeHouseEdge } from '../core/blackjack/houseEdge'
 
-export function useHouseEdge(rules: BlackjackRules) {
+export function useHouseEdge(rules: BlackjackRules, composition?: DeckComposition) {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const compositionKey = composition ? ALL_RANKS.map(r => composition[r]).join(',') : null
+
   return useMemo(
-    () => computeHouseEdge(rules),
+    () => computeHouseEdge(rules, composition ?? undefined),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [
       rules.decks,
@@ -18,6 +22,7 @@ export function useHouseEdge(rules: BlackjackRules) {
       rules.hitSplitAces,
       rules.blackjackAfterSplit,
       rules.maxSplits,
+      compositionKey,
     ],
   )
 }

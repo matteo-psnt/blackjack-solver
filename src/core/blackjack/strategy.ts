@@ -1,5 +1,6 @@
 import type {
   BlackjackRules,
+  DeckComposition,
   HandKey,
   HardHandKey,
   PairHandKey,
@@ -122,8 +123,11 @@ const HAND_STARTING_CARDS: Record<HandKey, [Rank, Rank]> = {
  * All cells represent optimal action conditioned on dealer not having blackjack.
  * Uses a finite-deck shoe composition derived from rules.decks.
  */
-export function computeStrategyTable(rules: BlackjackRules): StrategyTable {
-  const baseComposition = buildShoeComposition(rules.decks)
+export function computeStrategyTable(
+  rules: BlackjackRules,
+  startingComposition?: DeckComposition,
+): StrategyTable {
+  const baseComposition = startingComposition ?? buildShoeComposition(rules.decks)
 
   function computeRow(key: HandKey, params: HandParams): StrategyRow {
     const row = {} as StrategyRow
