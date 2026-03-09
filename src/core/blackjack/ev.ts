@@ -170,8 +170,10 @@ export function evPostSplitHand(
     if (pairRank === 'A' && !rules.hitSplitAces) {
       // Aces: forced stand after exactly one drawn card
       if (rank === 'A' && rules.resplitAces && splitsRemaining > 0) {
+        // Re-splitting creates two new hands — multiply by 2
         sum +=
           p *
+          2 *
           evPostSplitHand(
             'A',
             splitsRemaining - 1,
@@ -189,9 +191,10 @@ export function evPostSplitHand(
     } else {
       // Non-ace (or hitSplitAces=true): play hand normally
       if (rank === pairRank && splitsRemaining > 0 && pairRank !== 'A') {
-        // Non-ace re-split
+        // Non-ace re-split creates two new hands — multiply by 2
         sum +=
           p *
+          2 *
           evPostSplitHand(
             pairRank,
             splitsRemaining - 1,
