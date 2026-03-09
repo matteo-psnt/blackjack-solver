@@ -13,6 +13,11 @@ function App() {
   const rules = useRulesStore((s) => s.rules)
   const [tc, setTc] = useState<number>(0)
 
+  function handleTcChange(nextTc: number) {
+    const roundedTc = Math.round(nextTc * 10) / 10
+    setTc(Object.is(roundedTc, -0) ? 0 : roundedTc)
+  }
+
   const countComposition = useMemo<DeckComposition | undefined>(() => {
     if (tc === 0) return undefined
     const rc = Math.round(tc * rules.decks * 0.5)
@@ -29,7 +34,13 @@ function App() {
         <main className="flex-1 flex flex-col overflow-hidden">
           <HouseEdgeBanner result={houseEdge} rules={rules} />
           <div className="flex-1 overflow-y-auto">
-            <StrategyGrid table={strategyTable} rules={rules} tc={tc} setTc={setTc} countComposition={countComposition} />
+            <StrategyGrid
+              table={strategyTable}
+              rules={rules}
+              tc={tc}
+              setTc={handleTcChange}
+              countComposition={countComposition}
+            />
           </div>
         </main>
       </div>

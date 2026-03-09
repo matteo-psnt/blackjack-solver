@@ -65,6 +65,16 @@ function SectionLabel({ children }: { children: string }) {
 export function StrategyGrid({ table, rules, tc, setTc, countComposition }: StrategyGridProps) {
   const [evOverlay, setEvOverlay] = useState(false)
 
+  function handleTcInputChange(value: string) {
+    if (value === '') {
+      setTc(0)
+      return
+    }
+
+    const nextTc = Number(value)
+    if (!Number.isNaN(nextTc)) setTc(nextTc)
+  }
+
   const countTable = useStrategyTable(rules, countComposition)
 
   const displayTable = tc !== 0 ? countTable : table
@@ -130,11 +140,11 @@ export function StrategyGrid({ table, rules, tc, setTc, countComposition }: Stra
             <input
               type="number"
               value={tc}
-              onChange={e => setTc(Number(e.target.value))}
+              onChange={e => handleTcInputChange(e.target.value)}
               min={-10}
               max={15}
-              step={1}
-              className="w-10 bg-transparent text-[10px] font-mono text-center text-foreground outline-none [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+              step={0.1}
+              className="w-14 bg-transparent text-[10px] font-mono text-center text-foreground outline-none [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             />
           </div>
         </div>
