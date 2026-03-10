@@ -6,6 +6,7 @@ import { buildCompositionFromRcPenetration } from './core/blackjack/shoeUtils'
 import { RulesPanel } from './features/rules/RulesPanel'
 import { HouseEdgeBanner } from './features/strategy/HouseEdgeBanner'
 import { StrategyGrid } from './features/strategy/StrategyGrid'
+import { clampTc } from './features/strategy/tcInput'
 import { TooltipProvider } from './components/ui/tooltip'
 import type { DeckComposition } from './core/blackjack/types'
 
@@ -14,8 +15,7 @@ function App() {
   const [tc, setTc] = useState<number>(0)
 
   function handleTcChange(nextTc: number) {
-    const roundedTc = Math.round(nextTc * 10) / 10
-    setTc(Object.is(roundedTc, -0) ? 0 : roundedTc)
+    setTc(clampTc(nextTc))
   }
 
   const countComposition = useMemo<DeckComposition | undefined>(() => {

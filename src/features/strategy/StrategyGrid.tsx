@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import type { BlackjackRules, DeckComposition, StrategyTable } from '../../core/blackjack/types'
 import { useStrategyTable } from '../../hooks/useStrategyTable'
 import { StrategyTable as StrategyTableComponent } from './StrategyTable'
 import { ActionLegend } from './ActionLegend'
+import { formatTc, isValidTcInput, parseTcInput, stepTcByTenth } from './tcInput'
 
 const HARD_LABELS: Record<string, string> = {
   hard5: '5',
@@ -64,16 +65,33 @@ function SectionLabel({ children }: { children: string }) {
 
 export function StrategyGrid({ table, rules, tc, setTc, countComposition }: StrategyGridProps) {
   const [evOverlay, setEvOverlay] = useState(false)
+  const [tcInput, setTcInput] = useState(() => formatTc(tc))
+  const [isEditingTc, setIsEditingTc] = useState(false)
 
   function handleTcInputChange(value: string) {
-    if (value === '') {
-      setTc(0)
-      return
-    }
+    if (!isValidTcInput(value)) return
 
-    const nextTc = Number(value)
-    if (!Number.isNaN(nextTc)) setTc(nextTc)
+    setTcInput(value)
+
+    const nextTc = parseTcInput(value)
+    if (nextTc !== null) setTc(nextTc)
   }
+
+  function handleTcStep(direction: 1 | -1) {
+    const baseTc = parseTcInput(tcInput) ?? tc
+    const nextTc = stepTcByTenth(baseTc, direction)
+    setTc(nextTc)
+    setTcInput(formatTc(nextTc))
+  }
+
+  function handleTcBlur() {
+    setIsEditingTc(false)
+    setTcInput(formatTc(tc))
+  }
+
+  useEffect(() => {
+    if (!isEditingTc) setTcInput(formatTc(tc))
+  }, [isEditingTc, tc])
 
   const countTable = useStrategyTable(rules, countComposition)
 
@@ -138,12 +156,21 @@ export function StrategyGrid({ table, rules, tc, setTc, countComposition }: Stra
           <div className={`flex items-center gap-1 border rounded px-2 py-1 ${tc !== 0 ? 'border-muted-foreground/50' : 'border-muted-foreground/20'}`}>
             <span className="text-[10px] font-mono text-muted-foreground">TC</span>
             <input
-              type="number"
-              value={tc}
+              type="text"
+              inputMode="decimal"
+              value={tcInput}
+              onFocus={() => setIsEditingTc(true)}
               onChange={e => handleTcInputChange(e.target.value)}
-              min={-10}
-              max={15}
-              step={0.1}
+              onBlur={handleTcBlur}
+              onKeyDown={(e) => {
+                if (e.key === 'ArrowUp') {
+                  e.preventDefault()
+                  handleTcStep(1)
+                } else if (e.key === 'ArrowDown') {
+                  e.preventDefault()
+                  handleTcStep(-1)
+                }
+              }}
               className="w-14 bg-transparent text-[10px] font-mono text-center text-foreground outline-none [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             />
           </div>
