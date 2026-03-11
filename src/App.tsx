@@ -18,14 +18,18 @@ function App() {
     setTc(clampTc(nextTc))
   }
 
-  const countComposition = useMemo<DeckComposition | undefined>(() => {
-    if (tc === 0) return undefined
-    const rc = Math.round(tc * rules.decks * 0.5)
-    return buildCompositionFromRcPenetration(rules.decks, 50, rc)
-  }, [tc, rules.decks])
+  const rc = useMemo(() => Math.trunc(tc * rules.decks * 0.5), [tc, rules.decks])
+
+  const countComposition = useMemo<DeckComposition>(
+    () => buildCompositionFromRcPenetration(rules.decks, 50, rc),
+    [rc, rules.decks],
+  )
 
   const strategyTable = useStrategyTable(rules)
-  const houseEdge = useHouseEdge(rules, countComposition)
+  // Use canonical (full-shoe) house edge at rc=0; count-adjusted otherwise.
+  // This avoids a model-switch discontinuity: rc=0 means the count hasn't
+  // changed anything meaningful, so the standard published figure is correct.
+  const houseEdge = useHouseEdge(rules, rc !== 0 ? countComposition : undefined)
 
   return (
     <TooltipProvider delayDuration={300}>

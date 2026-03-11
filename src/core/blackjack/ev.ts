@@ -161,6 +161,7 @@ export function evPostSplitHand(
   const tw = Object.values(composition).reduce((a, b) => a + b, 0)
   const startValue = pairRank === 'A' ? 11 : pairRank === 'T' ? 10 : parseInt(pairRank, 10)
   const startIsSoft = pairRank === 'A'
+  const postHitMemo = new Map<string, number>()
   let sum = 0
 
   for (const rank of ALL_RANKS) {
@@ -205,7 +206,6 @@ export function evPostSplitHand(
             dealerMemo,
           )
       } else {
-        const postHitMemo = new Map<string, number>()
         sum += p * evOptimalPostSplit(newTotal, newSoft, dealerOutcomes, rules, composition, postHitMemo)
       }
     }

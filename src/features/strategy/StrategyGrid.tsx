@@ -177,17 +177,17 @@ export function StrategyGrid({ table, rules, tc, setTc, countComposition }: Stra
         </div>
       </div>
 
-      <section>
+      <section className="mx-auto w-fit max-w-full">
         <SectionLabel>Hard</SectionLabel>
         <StrategyTableComponent rows={hardRows} evOverlay={evOverlay} deviationSet={deviationSet} />
       </section>
 
-      <section>
+      <section className="mx-auto w-fit max-w-full">
         <SectionLabel>Soft</SectionLabel>
         <StrategyTableComponent rows={softRows} evOverlay={evOverlay} deviationSet={deviationSet} />
       </section>
 
-      <section>
+      <section className="mx-auto w-fit max-w-full">
         <SectionLabel>Pairs</SectionLabel>
         <StrategyTableComponent rows={pairRows} evOverlay={evOverlay} deviationSet={deviationSet} />
       </section>
