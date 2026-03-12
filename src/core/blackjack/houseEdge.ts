@@ -51,6 +51,19 @@ export function computeHouseEdge(
 
   let totalEV = 0
 
+  // Many (rank1, rank2, upcard) triples remove the same multiset of 3 cards from
+  // the shoe, yielding the same playComp. computeDealerOutcomes depends only on
+  // (total, isSoft, composition), so its memoized sub-results are identical for
+  // all orderings of the same triple. Share one dealerMemo per sorted triple.
+  // 1000 iterations → 220 unique sorted triples.
+  const dealerMemoByTriple = new Map<string, ReturnType<typeof createDealerMemo>>()
+
+  // Hit EVs depend on (composition, dealerOutcomes). For a fixed sorted player
+  // pair, swapping rank1 ↔ rank2 leaves playComp and upcard unchanged, so
+  // dealerOutcomes are also identical. Share one hitMemo per (sorted pair, upcard).
+  // 1000 iterations → 550 unique (sorted pair, upcard) combinations.
+  const hitMemoByPairUpcard = new Map<string, Map<string, number>>()
+
   for (const rank1 of ALL_RANKS) {
     // Probability of player's first card; remove it from shoe for subsequent draws.
     const pRank1 = baseComposition[rank1] / tw
@@ -72,7 +85,25 @@ export function computeHouseEdge(
         const playComp = removeCard(comp2, upcard as Rank)
 
         const pBJ = dealerBJProbability(upcard, playComp)
-        const dealerMemo = createDealerMemo()
+
+        // Resolve shared memos for this (playComp, upcard) combination.
+        const r1 = rank1 as string, r2 = rank2 as string, up = upcard as string
+        const tripleKey = r1 <= r2
+          ? (r2 <= up ? r1 + r2 + up : r1 <= up ? r1 + up + r2 : up + r1 + r2)
+          : (r1 <= up ? r2 + r1 + up : r2 <= up ? r2 + up + r1 : up + r2 + r1)
+        let dealerMemo = dealerMemoByTriple.get(tripleKey)
+        if (!dealerMemo) {
+          dealerMemo = createDealerMemo()
+          dealerMemoByTriple.set(tripleKey, dealerMemo)
+        }
+
+        const pairKey = r1 <= r2 ? r1 + r2 + up : r2 + r1 + up
+        let hitMemo = hitMemoByPairUpcard.get(pairKey)
+        if (!hitMemo) {
+          hitMemo = new Map<string, number>()
+          hitMemoByPairUpcard.set(pairKey, hitMemo)
+        }
+
         let cellEV: number
 
         if (isNatural(rank1, rank2)) {
@@ -83,7 +114,6 @@ export function computeHouseEdge(
           const dealerOutcomesNoBlackjack = dealerOutcomesNoBJ(upcard, rules, playComp, dealerMemo)
 
           const hand = playerHand(rank1, rank2)
-          const hitMemo = new Map<string, number>()
           const { ev: evGivenNoBJ, action } = evOptimal(
             hand.total,
             hand.isSoft,
@@ -109,7 +139,6 @@ export function computeHouseEdge(
           // No dealer BJ possible (upcards 2–9).
           const dealerOutcomes = dealerOutcomesFromUpcard(upcard, rules, playComp, dealerMemo)
           const hand = playerHand(rank1, rank2)
-          const hitMemo = new Map<string, number>()
           const { ev } = evOptimal(
             hand.total,
             hand.isSoft,
