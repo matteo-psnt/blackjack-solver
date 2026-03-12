@@ -7,7 +7,7 @@ import type {
   EvBreakdown,
   Rank,
 } from './types'
-import { ALL_RANKS, INFINITE_DECK } from './constants'
+import { ALL_RANKS, INFINITE_DECK, totalWeight } from './constants'
 import {
   addCard,
   dealerOutcomesNoBJ,
@@ -53,7 +53,7 @@ export function evHit(
   composition: DeckComposition,
   hitMemo: Map<string, number>,
 ): number {
-  const tw = Object.values(composition).reduce((a, b) => a + b, 0)
+  const tw = totalWeight(composition)
   let ev = 0
 
   for (const rank of ALL_RANKS) {
@@ -124,7 +124,7 @@ export function evDouble(
 ): number | null {
   if (!canDoubleHand(total, isSoft, restriction)) return null
 
-  const tw = Object.values(composition).reduce((a, b) => a + b, 0)
+  const tw = totalWeight(composition)
   let rawEV = 0
 
   for (const rank of ALL_RANKS) {
@@ -158,7 +158,7 @@ export function evPostSplitHand(
   composition: DeckComposition,
   dealerMemo: Map<string, DealerOutcomes>,
 ): number {
-  const tw = Object.values(composition).reduce((a, b) => a + b, 0)
+  const tw = totalWeight(composition)
   const startValue = pairRank === 'A' ? 11 : pairRank === 'T' ? 10 : parseInt(pairRank, 10)
   const startIsSoft = pairRank === 'A'
   const postHitMemo = new Map<string, number>()

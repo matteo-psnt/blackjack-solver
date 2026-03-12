@@ -61,6 +61,13 @@ export function cardNumericValue(rank: Rank): number {
 
 export const ALL_RANKS: Rank[] = ['A', '2', '3', '4', '5', '6', '7', '8', '9', 'T']
 
+/** Sum of all card counts in a composition. Avoids Object.values() array allocation in hot recursive paths. */
+export function totalWeight(comp: DeckComposition): number {
+  let sum = 0
+  for (const rank of ALL_RANKS) sum += comp[rank]
+  return sum
+}
+
 export const ALL_DEALER_UPCARDS: DealerUpcard[] = [
   '2',
   '3',

@@ -1,5 +1,5 @@
 import type { BlackjackRules, DeckComposition, DealerUpcard, HouseEdgeResult, Rank } from './types'
-import { ALL_RANKS, buildShoeComposition, removeCard } from './constants'
+import { ALL_RANKS, buildShoeComposition, removeCard, totalWeight } from './constants'
 import {
   addCard,
   createDealerMemo,
@@ -47,7 +47,7 @@ export function computeHouseEdge(
   startingComposition?: DeckComposition,
 ): HouseEdgeResult {
   const baseComposition = startingComposition ?? buildShoeComposition(rules.decks)
-  const tw = Object.values(baseComposition).reduce((a, b) => a + b, 0) // 52 * decks
+  const tw = totalWeight(baseComposition) // 52 * decks
 
   let totalEV = 0
 

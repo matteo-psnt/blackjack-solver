@@ -1,5 +1,5 @@
 import type { DealerOutcomes, BlackjackRules, DeckComposition, DealerUpcard, Rank } from './types'
-import { ALL_RANKS, INFINITE_DECK, cardNumericValue } from './constants'
+import { ALL_RANKS, INFINITE_DECK, cardNumericValue, totalWeight } from './constants'
 
 export function zeroDealerOutcomes(): DealerOutcomes {
   return { 17: 0, 18: 0, 19: 0, 20: 0, 21: 0, bust: 0 }
@@ -60,6 +60,7 @@ export function computeDealerOutcomes(
   rules: BlackjackRules,
   composition: DeckComposition,
   memo: Map<string, DealerOutcomes>,
+  tw?: number,
 ): DealerOutcomes {
   // Safety: bust handled here
   if (total > 21) {
@@ -86,16 +87,16 @@ export function computeDealerOutcomes(
 
   // Dealer hits
   const result = zeroDealerOutcomes()
-  const tw = Object.values(composition).reduce((a, b) => a + b, 0)
+  const totalW = tw ?? totalWeight(composition)
 
   for (const rank of ALL_RANKS) {
-    const p = composition[rank] / tw
+    const p = composition[rank] / totalW
     const [newTotal, newSoft] = addCard(total, isSoft, rank)
 
     if (newTotal > 21) {
       result.bust += p
     } else {
-      const sub = computeDealerOutcomes(newTotal, newSoft, rules, composition, memo)
+      const sub = computeDealerOutcomes(newTotal, newSoft, rules, composition, memo, totalW)
       addOutcomes(result, sub, p)
     }
   }
@@ -116,7 +117,7 @@ export function dealerOutcomesFromUpcard(
 ): DealerOutcomes {
   const total = cardNumericValue(upcard as Rank)
   const isSoft = upcard === 'A'
-  return computeDealerOutcomes(total, isSoft, rules, composition, memo)
+  return computeDealerOutcomes(total, isSoft, rules, composition, memo, totalWeight(composition))
 }
 
 /**
@@ -147,6 +148,9 @@ export function dealerOutcomesNoBJ(
     if (rank !== excludedRank) totalW += composition[rank]
   }
 
+  // Full shoe weight for dealer recursion (dealer plays from the full remaining composition).
+  const fullTw = totalW + composition[excludedRank]
+
   const result = zeroDealerOutcomes()
 
   for (const rank of ALL_RANKS) {
@@ -157,7 +161,7 @@ export function dealerOutcomesNoBJ(
     if (newTotal > 21) {
       result.bust += p
     } else {
-      const sub = computeDealerOutcomes(newTotal, newSoft, rules, composition, memo)
+      const sub = computeDealerOutcomes(newTotal, newSoft, rules, composition, memo, fullTw)
       addOutcomes(result, sub, p)
     }
   }
@@ -171,7 +175,7 @@ export function dealerOutcomesNoBJ(
  * Defaults to INFINITE_DECK for backward compatibility.
  */
 export function dealerBJProbability(upcard: DealerUpcard, composition: DeckComposition = INFINITE_DECK): number {
-  const tw = Object.values(composition).reduce((a, b) => a + b, 0)
+  const tw = totalWeight(composition)
   if (tw === 0) return 0
   if (upcard === 'A') return composition['T'] / tw
   if (upcard === 'T') return composition['A'] / tw
