@@ -4,6 +4,7 @@ import {
   buildCompositionFromRcPenetration,
   computeRunningCount,
   computeTrueCount,
+  deriveCountState,
   totalRemainingCards,
 } from '../core/blackjack/shoeUtils'
 
@@ -129,5 +130,42 @@ describe('buildCompositionFromRcPenetration', () => {
     for (const rank of Object.keys(full) as Array<keyof typeof full>) {
       expect(result[rank]).toBeLessThanOrEqual(full[rank])
     }
+  })
+})
+
+describe('deriveCountState', () => {
+  it('stays in neutral mode when TC truncates to RC = 0', () => {
+    const state = deriveCountState(0.3, 6)
+
+    expect(state.rc).toBe(0)
+    expect(state.effectiveTc).toBe(0)
+    expect(state.composition).toBeUndefined()
+  })
+
+  it('normalizes negative zero RC back to 0', () => {
+    const state = deriveCountState(-0.3, 6)
+
+    expect(state.rc).toBe(0)
+    expect(Object.is(state.rc, -0)).toBe(false)
+    expect(state.composition).toBeUndefined()
+  })
+
+  it('builds a counted composition once TC reaches the next RC bucket', () => {
+    const state = deriveCountState(0.4, 6)
+
+    expect(state.rc).toBe(1)
+    expect(state.composition).toBeDefined()
+    expect(computeRunningCount(state.composition!, 6)).toBe(1)
+    expect(state.effectiveTc).toBeCloseTo(computeTrueCount(state.composition!, 6), 10)
+    expect(state.effectiveTc).toBeGreaterThan(0)
+  })
+
+  it('uses the supplied remaining percentage when deriving RC from TC', () => {
+    const state = deriveCountState(2, 6, 25)
+
+    expect(state.rc).toBe(3)
+    expect(state.composition).toBeDefined()
+    expect(totalRemainingCards(state.composition!)).toBeGreaterThan(0)
+    expect(totalRemainingCards(state.composition!)).toBeLessThan(totalRemainingCards(buildShoeComposition(6)) / 2)
   })
 })

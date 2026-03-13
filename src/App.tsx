@@ -2,34 +2,34 @@ import { useMemo, useState } from 'react'
 import { useRulesStore } from './store/rulesStore'
 import { useStrategyTable } from './hooks/useStrategyTable'
 import { useHouseEdge } from './hooks/useHouseEdge'
-import { buildCompositionFromRcPenetration } from './core/blackjack/shoeUtils'
+import { deriveCountState } from './core/blackjack/shoeUtils'
 import { RulesPanel } from './features/rules/RulesPanel'
 import { HouseEdgeBanner } from './features/strategy/HouseEdgeBanner'
 import { StrategyGrid } from './features/strategy/StrategyGrid'
 import { clampTc } from './features/strategy/tcInput'
+import { clampPenetration } from './features/strategy/penetrationInput'
 import { TooltipProvider } from './components/ui/tooltip'
-import type { DeckComposition } from './core/blackjack/types'
 
 function App() {
   const rules = useRulesStore((s) => s.rules)
   const [tc, setTc] = useState<number>(0)
+  const [penetration, setPenetration] = useState<number>(50)
 
   function handleTcChange(nextTc: number) {
     setTc(clampTc(nextTc))
   }
 
-  const rc = useMemo(() => Math.trunc(tc * rules.decks * 0.5), [tc, rules.decks])
+  function handlePenetrationChange(nextPenetration: number) {
+    setPenetration(clampPenetration(nextPenetration))
+  }
 
-  const countComposition = useMemo<DeckComposition>(
-    () => buildCompositionFromRcPenetration(rules.decks, 50, rc),
-    [rc, rules.decks],
+  const countState = useMemo(
+    () => deriveCountState(tc, rules.decks, 100 - penetration),
+    [tc, rules.decks, penetration],
   )
 
   const strategyTable = useStrategyTable(rules)
-  // Use canonical (full-shoe) house edge at rc=0; count-adjusted otherwise.
-  // This avoids a model-switch discontinuity: rc=0 means the count hasn't
-  // changed anything meaningful, so the standard published figure is correct.
-  const houseEdge = useHouseEdge(rules, rc !== 0 ? countComposition : undefined)
+  const houseEdge = useHouseEdge(rules, countState.composition)
 
   return (
     <TooltipProvider delayDuration={300}>
@@ -43,7 +43,9 @@ function App() {
               rules={rules}
               tc={tc}
               setTc={handleTcChange}
-              countComposition={countComposition}
+              penetration={penetration}
+              setPenetration={handlePenetrationChange}
+              countComposition={countState.composition}
             />
           </div>
         </main>

@@ -3,6 +3,12 @@ import type { BlackjackRules, DeckComposition, StrategyTable } from '../../core/
 import { useStrategyTable } from '../../hooks/useStrategyTable'
 import { StrategyTable as StrategyTableComponent } from './StrategyTable'
 import { ActionLegend } from './ActionLegend'
+import {
+  formatPenetration,
+  isValidPenetrationInput,
+  parsePenetrationInput,
+  stepPenetration,
+} from './penetrationInput'
 import { formatTc, isValidTcInput, parseTcInput, stepTcByTenth } from './tcInput'
 
 const HARD_LABELS: Record<string, string> = {
@@ -50,6 +56,8 @@ interface StrategyGridProps {
   rules: BlackjackRules
   tc: number
   setTc: (tc: number) => void
+  penetration: number
+  setPenetration: (penetration: number) => void
   countComposition: DeckComposition | undefined
 }
 
@@ -63,10 +71,21 @@ function SectionLabel({ children }: { children: string }) {
   )
 }
 
-export function StrategyGrid({ table, rules, tc, setTc, countComposition }: StrategyGridProps) {
+export function StrategyGrid({
+  table,
+  rules,
+  tc,
+  setTc,
+  penetration,
+  setPenetration,
+  countComposition,
+}: StrategyGridProps) {
   const [evOverlay, setEvOverlay] = useState(false)
   const [tcInput, setTcInput] = useState(() => formatTc(tc))
   const [isEditingTc, setIsEditingTc] = useState(false)
+  const [penetrationInput, setPenetrationInput] = useState(() => formatPenetration(penetration))
+  const [isEditingPenetration, setIsEditingPenetration] = useState(false)
+  const isCountAdjusted = countComposition !== undefined
 
   function handleTcInputChange(value: string) {
     if (!isValidTcInput(value)) return
@@ -89,16 +108,41 @@ export function StrategyGrid({ table, rules, tc, setTc, countComposition }: Stra
     setTcInput(formatTc(tc))
   }
 
+  function handlePenetrationInputChange(value: string) {
+    if (!isValidPenetrationInput(value)) return
+
+    setPenetrationInput(value)
+
+    const nextPenetration = parsePenetrationInput(value)
+    if (nextPenetration !== null) setPenetration(nextPenetration)
+  }
+
+  function handlePenetrationStep(direction: 1 | -1) {
+    const basePenetration = parsePenetrationInput(penetrationInput) ?? penetration
+    const nextPenetration = stepPenetration(basePenetration, direction)
+    setPenetration(nextPenetration)
+    setPenetrationInput(formatPenetration(nextPenetration))
+  }
+
+  function handlePenetrationBlur() {
+    setIsEditingPenetration(false)
+    setPenetrationInput(formatPenetration(penetration))
+  }
+
   useEffect(() => {
     if (!isEditingTc) setTcInput(formatTc(tc))
   }, [isEditingTc, tc])
 
+  useEffect(() => {
+    if (!isEditingPenetration) setPenetrationInput(formatPenetration(penetration))
+  }, [isEditingPenetration, penetration])
+
   const countTable = useStrategyTable(rules, countComposition)
 
-  const displayTable = tc !== 0 ? countTable : table
+  const displayTable = isCountAdjusted ? countTable : table
 
   const deviationSet = useMemo<Set<string>>(() => {
-    if (tc === 0) return new Set()
+    if (!isCountAdjusted) return new Set()
     const s = new Set<string>()
     for (const section of ['hard', 'soft', 'pairs'] as const) {
       for (const [handKey, row] of Object.entries(countTable[section])) {
@@ -109,7 +153,7 @@ export function StrategyGrid({ table, rules, tc, setTc, countComposition }: Stra
       }
     }
     return s
-  }, [tc, table, countTable])
+  }, [isCountAdjusted, table, countTable])
 
   const hardRows = Object.entries(displayTable.hard).map(([key, row]) => ({
     key: key as keyof typeof displayTable.hard,
@@ -153,9 +197,10 @@ export function StrategyGrid({ table, rules, tc, setTc, countComposition }: Stra
           <button onClick={() => setEvOverlay(v => !v)} className={btnClass(evOverlay)}>
             EV heatmap
           </button>
-          <div className={`flex items-center gap-1 border rounded px-2 py-1 ${tc !== 0 ? 'border-muted-foreground/50' : 'border-muted-foreground/20'}`}>
+          <div className={`flex items-center gap-1 border rounded px-2 py-1 ${isCountAdjusted ? 'border-muted-foreground/50' : 'border-muted-foreground/20'}`}>
             <span className="text-[10px] font-mono text-muted-foreground">TC</span>
             <input
+              aria-label="True count"
               type="text"
               inputMode="decimal"
               value={tcInput}
@@ -173,6 +218,29 @@ export function StrategyGrid({ table, rules, tc, setTc, countComposition }: Stra
               }}
               className="w-14 bg-transparent text-[10px] font-mono text-center text-foreground outline-none [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             />
+          </div>
+          <div className={`flex items-center gap-1 border rounded px-2 py-1 ${isCountAdjusted ? 'border-muted-foreground/50' : 'border-muted-foreground/20'}`}>
+            <span className="text-[10px] font-mono text-muted-foreground">Pen</span>
+            <input
+              aria-label="Penetration dealt percentage"
+              type="text"
+              inputMode="decimal"
+              value={penetrationInput}
+              onFocus={() => setIsEditingPenetration(true)}
+              onChange={e => handlePenetrationInputChange(e.target.value)}
+              onBlur={handlePenetrationBlur}
+              onKeyDown={(e) => {
+                if (e.key === 'ArrowUp') {
+                  e.preventDefault()
+                  handlePenetrationStep(1)
+                } else if (e.key === 'ArrowDown') {
+                  e.preventDefault()
+                  handlePenetrationStep(-1)
+                }
+              }}
+              className="w-12 bg-transparent text-[10px] font-mono text-center text-foreground outline-none [-moz-appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+            />
+            <span className="text-[10px] font-mono text-muted-foreground">%</span>
           </div>
         </div>
       </div>

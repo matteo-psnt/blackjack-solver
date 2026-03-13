@@ -27,6 +27,12 @@ export function computeTrueCount(composition: DeckComposition, decks: number): n
   return rc / (remaining / 52)
 }
 
+export interface DerivedCountState {
+  rc: number
+  effectiveTc: number
+  composition?: DeckComposition
+}
+
 /**
  * Builds a DeckComposition that approximates a given running count at a given
  * penetration percentage. Cards are dealt proportionally, then low/high counts
@@ -103,4 +109,28 @@ export function buildCompositionFromRcPenetration(
   }
 
   return remaining
+}
+
+export function deriveCountState(
+  tc: number,
+  decks: number,
+  remainingPct = 50,
+): DerivedCountState {
+  const rawRc = Math.trunc(tc * decks * (remainingPct / 100))
+  const rc = Object.is(rawRc, -0) ? 0 : rawRc
+
+  if (rc === 0) {
+    return {
+      rc: 0,
+      effectiveTc: 0,
+    }
+  }
+
+  const composition = buildCompositionFromRcPenetration(decks, remainingPct, rc)
+
+  return {
+    rc,
+    effectiveTc: computeTrueCount(composition, decks),
+    composition,
+  }
 }
