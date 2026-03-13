@@ -29,7 +29,7 @@ export function HouseEdgeBanner({ result, rules }: HouseEdgeBannerProps) {
           <p
             key={result.formatted}
             className="text-3xl font-mono tabular-nums font-light animate-edge-flash leading-none"
-            style={{ color: isPlayerEdge ? 'var(--action-s)' : 'var(--foreground)' }}
+            style={{ color: isPlayerEdge ? 'var(--action-h)' : 'var(--foreground)' }}
           >
             {result.formatted}
           </p>
