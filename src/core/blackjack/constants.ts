@@ -92,7 +92,6 @@ export const DEFAULT_RULES: BlackjackRules = {
   surrender: 'none',
   resplitAces: false,
   hitSplitAces: false,
-  blackjackAfterSplit: false,
   maxSplits: 4,
 }
 

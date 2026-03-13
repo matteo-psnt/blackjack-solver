@@ -184,8 +184,6 @@ export function evPostSplitHand(
             composition,
             dealerMemo,
           )
-      } else if (rank === 'T' && rules.blackjackAfterSplit) {
-        sum += p * rules.blackjackPayout
       } else {
         sum += p * evStand(newTotal, dealerOutcomes)
       }

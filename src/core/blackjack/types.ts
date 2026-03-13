@@ -27,7 +27,6 @@ export interface BlackjackRules {
   // Split-specific rules
   resplitAces: boolean
   hitSplitAces: boolean
-  blackjackAfterSplit: boolean
   maxSplits: 2 | 3 | 4
 }
 

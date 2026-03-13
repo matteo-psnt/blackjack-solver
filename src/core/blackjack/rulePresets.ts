@@ -28,7 +28,6 @@ const B: BlackjackRules = {
   surrender: "none",
   resplitAces: false,
   hitSplitAces: false,
-  blackjackAfterSplit: false,
   maxSplits: 4,
 }
 
@@ -42,7 +41,6 @@ const RULE_KEYS: (keyof BlackjackRules)[] = [
   "surrender",
   "resplitAces",
   "hitSplitAces",
-  "blackjackAfterSplit",
   "maxSplits",
 ]
 

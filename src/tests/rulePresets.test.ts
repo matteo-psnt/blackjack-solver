@@ -19,7 +19,7 @@ describe("rule presets", () => {
 
   it("falls back to custom when rules no longer match a preset", () => {
     expect(
-      resolveRulesPresetId({ ...DEFAULT_RULES, blackjackAfterSplit: true })
+      resolveRulesPresetId({ ...DEFAULT_RULES, resplitAces: true })
     ).toBe("custom")
   })
 

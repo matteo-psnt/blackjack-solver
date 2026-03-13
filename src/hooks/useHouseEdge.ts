@@ -20,7 +20,6 @@ export function useHouseEdge(rules: BlackjackRules, composition?: DeckCompositio
       rules.surrender,
       rules.resplitAces,
       rules.hitSplitAces,
-      rules.blackjackAfterSplit,
       rules.maxSplits,
       compositionKey,
     ],

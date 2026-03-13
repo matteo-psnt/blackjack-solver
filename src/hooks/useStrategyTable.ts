@@ -20,7 +20,6 @@ export function useStrategyTable(rules: BlackjackRules, composition?: DeckCompos
       rules.surrender,
       rules.resplitAces,
       rules.hitSplitAces,
-      rules.blackjackAfterSplit,
       rules.maxSplits,
       compositionKey,
     ],
